@@ -27,7 +27,7 @@ COMMENT ON TABLE johns_hopkins.location IS
 'A bit denormalized, matches the columns in https://github.com/derekjwilliams/COVID-19/blob/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv';
 
 COMMENT ON COLUMN johns_hopkins.location.uid IS
-'This is a nique ID in Johns Hopkins time series data, can be used to match the rows from the Johns Hopkins data sets, Same column as uid in https://github.com/derekjwilliams/COVID-19/blob/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv';
+'This is a unique ID in Johns Hopkins time series data, can be used to match the rows from the Johns Hopkins data sets, Same column as uid in https://github.com/derekjwilliams/COVID-19/blob/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv';
 
 COMMENT ON COLUMN johns_hopkins.location.iso2 IS
 'Same column as iso2 in https://github.com/derekjwilliams/COVID-19/blob/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv';
