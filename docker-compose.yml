@@ -7,7 +7,7 @@ services:
         build:
             context: ./db
         volumes:
-            - ./db-data:/var/lib/postgresql/data
+            - ./db/data/:/var/lib/data
         env_file:
             - ./.env
         networks:
@@ -48,4 +48,4 @@ services:
 networks:
     network:
 volumes:
-    db-data:
+    db:
