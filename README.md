@@ -31,7 +31,7 @@ https://www.npmjs.com/package/postgraphile-plugin-connection-filter-postgis
 Getting case counts in the US
 
 ```{
-  allLocations (filter: {iso3: {equalTo: "USA"}}) {
+  allLocations(filter: { iso3: { equalTo: "USA" } }) {
     nodes {
       centroid {
         geojson
@@ -44,7 +44,7 @@ Getting case counts in the US
       iso3
       code3
       combinedKey
-      caseCountsByLocationId {
+      caseCountsByLocationId(filter: { time: { equalTo: "2020-04-06" } }) {
         nodes {
           count
         }
@@ -52,5 +52,6 @@ Getting case counts in the US
     }
   }
 }
+
 ```
 
