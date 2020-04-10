@@ -36,7 +36,7 @@ COMMENT ON COLUMN johns_hopkins.location.iso3 IS
 'Same column as iso3 in https://github.com/derekjwilliams/COVID-19/blob/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv';
 
 COMMENT ON COLUMN johns_hopkins.location.code3 IS
-'Same column as code33 in https://github.com/derekjwilliams/COVID-19/blob/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv';
+'Same column as code3 in https://github.com/derekjwilliams/COVID-19/blob/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv';
 
 COMMENT ON COLUMN johns_hopkins.location.fips IS
 'Same column as fips in https://github.com/derekjwilliams/COVID-19/blob/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv';
