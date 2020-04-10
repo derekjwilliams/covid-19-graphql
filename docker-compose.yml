@@ -15,7 +15,6 @@ services:
         ports:
             - 5432:5432
 
-
     graphql:
         container_name: covid-19-graphql-service
         restart: always
@@ -43,7 +42,7 @@ services:
                 "--enhance-graphiql",
                 "--allow-explain",
                 "--append-plugins",
-                "postgraphile-plugin-connection-filter",
+                "postgraphile-plugin-connection-filter,@graphile/postgis,postgraphile-plugin-connection-filter-postgis",
             ]
 networks:
     network:

@@ -1,2 +1,2 @@
-FROM postgres:alpine
+FROM mdillon/postgis
 COPY ./init/ /docker-entrypoint-initdb.d/
