@@ -75,6 +75,7 @@ COMMENT ON COLUMN johns_hopkins.case_count.count IS
 CREATE TABLE johns_hopkins.missing_case_count (
     id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
     location_id uuid,
+    "time" TIMESTAMPTZ not NULL,
     "missing" Bool default false,
     "missing_reason" varchar (32)
 );
@@ -110,6 +111,7 @@ COMMENT ON COLUMN johns_hopkins.death_count.count IS
 CREATE TABLE johns_hopkins.missing_death_count (
     id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
     location_id uuid,
+    "time" TIMESTAMPTZ not NULL,
     "missing" Bool default false,
     "missing_reason" varchar (32)
 );
@@ -144,6 +146,7 @@ COMMENT ON COLUMN johns_hopkins.recovered_count.count IS
 CREATE TABLE johns_hopkins.missing_recovered_count (
     id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
     location_id uuid,
+    "time" TIMESTAMPTZ not NULL,
     "missing" Bool default false,
     "missing_reason" varchar (32)
 );
