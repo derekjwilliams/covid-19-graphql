@@ -33,6 +33,6 @@ const validDataLength = verifyDataLength(lines);
 
 if (validHeader && validDataLength) {
   const dates = convertHeaderDates(header.split(','))
-  // TODO create sql insert/update for each location and date
+  // TODO create sql insert/update for each location and date and write to file
 }
 
