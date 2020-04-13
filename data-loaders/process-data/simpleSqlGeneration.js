@@ -1,9 +1,10 @@
 import fs from 'fs';
 
-const filename = '../../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv'
+const filename = '../../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv' // change to your csse data location
 const lines = fs.readFileSync(filename, {encoding: 'utf8'}).split('\n')
 
-const verifyLocationInHeader = (header) =>  header.startsWith('UID,iso2,iso3,code3,FIPS,Admin2,Province_State,Country_Region,Lat,Long_,Combined_Key')
+const nonDateHeaderString = 'UID,iso2,iso3,code3,FIPS,Admin2,Province_State,Country_Region,Lat,Long_,Combined_Key'
+const verifyLocationInHeader = (header) =>  header.startsWith(nonDateHeaderString)
 
 const verifyDataLength = (lines) => {
   if (lines.length < 2) {
@@ -19,11 +20,19 @@ const verifyDataLength = (lines) => {
   })
 }
 
-const validHeader = verifyLocationInHeader(lines[0])
-console.log(validHeader)
+const convertHeaderDates = (header) => {
+  // hack to split dates, assumes that the last non-date column last value of nonDateHeaderString
+  const nonDateColumns = nonDateHeaderString.split(',')
+  const rawDates = header.filter((header, index) => index > nonDateColumns.length)
+  console.log(rawDates) // TODO return actual javascript dates
+}
+const header = lines[0]
+const validHeader = header.startsWith(nonDateHeaderString)
 const validDataLength = verifyDataLength(lines);
 
 if (validHeader && validDataLength) {
-  console.log(validLength)
+  const dates = convertHeaderDates(header.split(','))
+  console.log(dates)
+  console.log(validDataLength)
 }
 
