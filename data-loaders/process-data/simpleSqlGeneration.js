@@ -1,10 +1,12 @@
-import fs from 'fs';
-import moment from 'moment';
+import fs from 'fs'
+import moment from 'moment'
+import uuid from 'uuid'
 
 // This is only for US data, TODO fix for US and Global data, as below
 // const GlobalNonDateHeaderString ='UID,iso2,iso3,code3,FIPS,Admin2,Province_State,Country_Region,Lat,Long_,Combined_Key,Population'
 
 const filename = '../../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv' // change to your csse data location
+
 const lines = fs.readFileSync(filename, {encoding: 'utf8'}).split('\n')
 
 const locationHeaderToSqlColumns = new Map([
@@ -50,7 +52,7 @@ if (validHeader && validDataLength) {
       const locationData = line.split(regex).filter((value,index) => index < usNonDateHeaderString.split(',').length)
       const countData = line.split(regex).filter((value,index) => index >= usNonDateHeaderString.split(',').length)
       if (locationData.length > 1) {
-        console.log(locationData.length)
+        //console.log(locationData.length)
         usNonDateHeaderString.split(',')
         const locationInsert = 'INSERT INTO johns_hopkins() VALUES ()'
         // console.log(locationData.join(','))
@@ -59,4 +61,3 @@ if (validHeader && validDataLength) {
   })
   // TODO create sql insert/update for each location and date and write to file
 }
-
