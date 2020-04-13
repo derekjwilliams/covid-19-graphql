@@ -52,7 +52,7 @@ if (validHeader && validDataLength) {
       if (locationData.length > 1) {
         console.log(locationData.length)
         usNonDateHeaderString.split(',')
-        locationInsert = 'INSERT INTO johns_hopkins() VALUES ()'
+        const locationInsert = 'INSERT INTO johns_hopkins() VALUES ()'
         // console.log(locationData.join(','))
       }
     }
