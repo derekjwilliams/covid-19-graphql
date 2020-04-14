@@ -1,6 +1,8 @@
 # covid-19-graphql
 Simple postgraphile based graphql API based on the data from Johns Hopkins, see https://github.com/CSSEGISandData/COVID-19.git
 
+In addition, additional data will be available, e.g. mobility data from Apple and Google
+
 ## Note 
 
 The database is stored in the postgres Docker container, 
@@ -54,4 +56,14 @@ Getting case counts in the US
 }
 
 ```
+
+## Mobility Data
+
+### Apple
+
+See https://www.apple.com/covid19/mobility. The data-loaders/example-data folder contains the schema for the apple data
+
+### Google
+
+See https://github.com/pastelsky/covid-19-mobility-tracker. Todo, create schema for this data
 
