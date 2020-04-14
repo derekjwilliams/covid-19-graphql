@@ -22,8 +22,6 @@ CREATE TABLE johns_hopkins.location (
     name text
 );
 
-
-
 COMMENT ON TABLE johns_hopkins.location IS
 'A bit denormalized, matches the columns in https://github.com/derekjwilliams/COVID-19/blob/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv';
 

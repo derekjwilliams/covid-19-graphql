@@ -15,7 +15,7 @@ const locationHeaderToSqlColumns = new Map([
 ['iso3', {name: 'iso3', length: 3, type: 'varchar'}],
 ['code3', {name: 'code3', type: 'int4'}],
 ['FIPS', {name: 'fips', length: 8, type: 'varchar'}],
-['Admin2', {name:  'admin2', length: 128, type: 'int4'}],
+['Admin2', {name:  'admin2', length: 128, type: 'varchar'}],
 ['Province_State',  {name: 'province_state', length: 128, type: 'varchar'}],
 ['Country_Region', {name: 'country_region', length: 128, type: 'varchar'}],
 ['Lat', {name: '', type: 'double'}],
@@ -47,8 +47,8 @@ const wrapLocationDataStringParts = (locationData) => {
     locationHeaderToSqlColumns.forEach((v,key) => {
       if(v.type === 'varchar') {
         outputLocationData[index] = outputLocationData[index][0] !== '"' ? 
-          `"${outputLocationData[index]}"` : 
-          outputLocationData[index]
+          `'${outputLocationData[index]}'` : 
+          outputLocationData[index].replace(/"/g, '\'')
       }
       index++
     })
@@ -77,12 +77,15 @@ if (validHeader && validDataLength) {
       if (locationData.length > 1) {
         const locationDataWrapped = wrapLocationDataStringParts(locationData)
         const id = uuid.v4()
-        //console.log(locationDataWrapped[0])
+        const lat = locationDataWrapped[8]
+        const lon = locationDataWrapped[9]
+        locationDataWrapped.splice(8, 2, "ST_GeomFromText('POINT(" + lon + " " + lat + ")', 4326)")
+
         locations.set(locationDataWrapped[0], locationDataWrapped)
-        const locationInsert = `INSERT INTO johns_hopkins.location(id,${usNonDateHeaderString}) VALUES ("${id}",${locationDataWrapped.join(",")})`
+        const columns = 'id,UID,iso2,iso3,code3,FIPS,Admin2,Province_State,Country_Region,Lat,Long_,Combined_Key,Population'
+        const locationInsert = `INSERT INTO johns_hopkins.location(${columns}) VALUES ('${id}',${locationDataWrapped.join(",")});`
         console.log(locationInsert)
       }
     }
   })
-  // TODO create sql insert/update for each location and date and write to file
 }
