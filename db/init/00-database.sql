@@ -18,6 +18,7 @@ CREATE TABLE johns_hopkins.location (
     country_region varchar(128),
     combined_key varchar(256),
     centroid geometry(POINT, 4326),
+    population int8,
     name text
 );
 

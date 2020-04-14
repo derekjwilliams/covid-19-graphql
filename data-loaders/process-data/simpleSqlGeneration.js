@@ -1,13 +1,13 @@
 import fs from 'fs'
 import moment from 'moment'
-import uuid from 'uuid'
+import uuid from 'uuid';
 
 // This is only for US data, TODO fix for US and Global data, as below
 // const GlobalNonDateHeaderString ='UID,iso2,iso3,code3,FIPS,Admin2,Province_State,Country_Region,Lat,Long_,Combined_Key,Population'
 
-const filename = '../../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv' // change to your csse data location
-
-const lines = fs.readFileSync(filename, {encoding: 'utf8'}).split('\n')
+const filenameWithPopulations = '../../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv' // just to get locations with populati
+const locations = new Map()
+const lines = fs.readFileSync(filenameWithPopulations, {encoding: 'utf8'}).split('\n')
 
 const locationHeaderToSqlColumns = new Map([
 ['UID', {name: 'uid', type: 'int8'}],
@@ -18,11 +18,14 @@ const locationHeaderToSqlColumns = new Map([
 ['Admin2', {name:  'admin2', length: 128, type: 'int4'}],
 ['Province_State',  {name: 'province_state', length: 128, type: 'varchar'}],
 ['Country_Region', {name: 'country_region', length: 128, type: 'varchar'}],
-['Combined_Key', {name: 'combined_key', length: 256, type: 'varchar'}]]
+['Lat', {name: '', type: 'double'}],
+['Long_', {name: '', type: 'double'}],
+['Combined_Key', {name: 'combined_key', length: 256, type: 'varchar'}],
+['Population', {name: 'population', type: 'int8'}]]
 )
 
-const usNonDateHeaderString = 'UID,iso2,iso3,code3,FIPS,Admin2,Province_State,Country_Region,Lat,Long_,Combined_Key'
-const verifyLocationInHeader = (header) =>  header.startsWith(usNonDateHeaderString)
+const usNonDateHeaderString = Array.from(locationHeaderToSqlColumns.keys()).join(',');
+//'UID,iso2,iso3,code3,FIPS,Admin2,Province_State,Country_Region,Lat,Long_,Combined_Key,Population'
 
 const verifyDataLength = (lines) => {
   if (lines.length < 2) {
@@ -36,6 +39,26 @@ const verifyDataLength = (lines) => {
   })
 }
 
+const wrapLocationDataStringParts = (locationData) => {
+  if (locationData.length > 0) {
+    const outputLocationData = locationData.slice(0)
+    
+    let index = 0
+    locationHeaderToSqlColumns.forEach((v,key) => {
+      if(v.type === 'varchar') {
+        outputLocationData[index] = outputLocationData[index][0] !== '"' ? 
+          `"${outputLocationData[index]}"` : 
+          outputLocationData[index]
+      }
+      index++
+    })
+
+    return outputLocationData
+  }
+}
+//UID,iso2,iso3,code3,FIPS,Admin2,Province_State,Country_Region,Lat,Long_,Combined_Key,Population
+//UID,iso2,iso3,code3,FIPS,Admin2,Province_State,Country_Region,Lat,Long_,Combined_Key
+
 const validHeader = lines[0].startsWith(usNonDateHeaderString)
 const validDataLength = verifyDataLength(lines);
 
@@ -45,17 +68,19 @@ if (validHeader && validDataLength) {
                   .split(',')
                   .filter((header, index) => index > usNonDateHeaderString.split(',').length)
                   .map(rawDate => moment.utc(rawDate, "MM/DD/YY").toISOString())
-  console.log(dates)
+  //console.log(dates)
   const regex = /,(?=(?:(?:[^"]*"){2})*[^"]*$)/
   lines.forEach((line, index) => {
     if (index) {
       const locationData = line.split(regex).filter((value,index) => index < usNonDateHeaderString.split(',').length)
       const countData = line.split(regex).filter((value,index) => index >= usNonDateHeaderString.split(',').length)
       if (locationData.length > 1) {
-        //console.log(locationData.length)
-        usNonDateHeaderString.split(',')
-        const locationInsert = 'INSERT INTO johns_hopkins() VALUES ()'
-        // console.log(locationData.join(','))
+        const locationDataWrapped = wrapLocationDataStringParts(locationData)
+        const id = uuid.v4()
+        //console.log(locationDataWrapped[0])
+        locations.set(locationDataWrapped[0], locationDataWrapped)
+        const locationInsert = `INSERT INTO johns_hopkins.location(id,${usNonDateHeaderString}) VALUES ("${id}",${locationDataWrapped.join(",")})`
+        console.log(locationInsert)
       }
     }
   })
