@@ -1,16 +1,22 @@
 import fs from 'fs'
 import moment from 'moment'
-import uuid from 'uuid';
+import uuid from 'uuid'
+import dotenv from 'dotenv'
+
+dotenv.config()
 
 // This is only for US data, TODO fix for US and Global data, as below
 // const GlobalNonDateHeaderString ='UID,iso2,iso3,code3,FIPS,Admin2,Province_State,Country_Region,Lat,Long_,Combined_Key,Population'
 
-const defaultPopulationsFilename = '../../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv' // just to get locations with populations
+const defaultPopulationsOrigin = '../../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv' // just to get locations with populations
+const defaultLocationsInsertDestination = '../../db/init/50-johnshopkins-location-data.sql'
 
-process.env.POPULATIONS_FILENAME || defaultPopulationsFilename
+const populationsOrigin = process.env.POPULATIONS_FILENAME || defaultPopulationsOrigin
+const locationsInsertDestination = process.env.LOCATIONS_DESTINATION || defaultLocationsInsertDestination
+
 
 const locations = new Map()
-const lines = fs.readFileSync(filenameWithPopulations, {encoding: 'utf8'}).split('\n')
+const lines = fs.readFileSync(populationsOrigin, {encoding: 'utf8'}).split('\n')
 
 const locationHeaderToSqlColumns = new Map([
 ['UID', {name: 'uid', type: 'int8'}],
@@ -30,12 +36,10 @@ const locationHeaderToSqlColumns = new Map([
 const keys = Array.from(locationHeaderToSqlColumns.keys())
 const indexOfLat = keys.indexOf('Lat')
 const indexOfLon = keys.indexOf('Long_')
-const databaseColumns = keys.slice()
-databaseColumns.splice(indexOfLat, 2, 'centroid')
-const columns = `id,${databaseColumns}`
-console.log(columns)
+const someDatabaseColumns = keys.slice()
+someDatabaseColumns.splice(indexOfLat, 2, 'centroid')
+const databaseColumns = `id,${someDatabaseColumns}`
 const usNonDateHeaderString = keys.join(',');
-// TODO column name for the point containing Lat and Long_ is centroid
 
 const verifyDataLength = (lines) => {
   if (lines.length < 2) {
@@ -77,15 +81,15 @@ if (validHeader && validDataLength) {
                   .map(rawDate => moment.utc(rawDate, "MM/DD/YY").toISOString())
   const regex = /,(?=(?:(?:[^"]*"){2})*[^"]*$)/
 
-  const filename = '../../db/init/location_inserts.txt'
-  fs.open(filename, 'w', function (err, file) {
+  // const filename = '../../db/init/50-johnshopkins-location-data.sql'
+  fs.open(locationsInsertDestination, 'w', function (err, file) {
     if (err) {
       console.log('error' + err)
       throw err;
     }
-    console.log(`created ${filename}`);
+    console.log(`created ${locationsInsertDestination}`);
   });
-  fs.appendFile(filename, '\\connect covid;', function (err) {
+  fs.appendFile(locationsInsertDestination, '\\connect covid;\n\n', function (err) {
     if (err) {
       throw err;
     }
@@ -104,9 +108,9 @@ if (validHeader && validDataLength) {
         locations.set(locationDataWrapped[0], locationDataWrapped)
         
         // write  location insert sql, the locations Map above is used in the next step (after lines.forEach) to write to deaths and confirmed insert file
-        const locationInsert = `INSERT INTO johns_hopkins.location(${columns}) VALUES ('${id}',${locationDataWrapped.join(",")});\n`
+        const locationInsert = `INSERT INTO johns_hopkins.location(${databaseColumns}) VALUES ('${id}',${locationDataWrapped.join(",")});\n`
 
-        fs.appendFile(filename, locationInsert, function (err) {
+        fs.appendFile(locationsInsertDestination, locationInsert, function (err) {
           if (err) {
             throw err;
           }
