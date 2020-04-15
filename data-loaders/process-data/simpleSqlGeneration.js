@@ -100,7 +100,7 @@ if (validHeader && validDataLength) {
         locationDataWrapped.splice(indexOfLat, 2, "ST_GeomFromText('POINT(" + lon + " " + lat + ")', 4326)")
         locations.set(locationDataWrapped[0], locationDataWrapped)
         
-        // write  location insert sql, locations Map above is used in the next step (after lines.forEach) to write to deaths and confirmed insert file
+        // write  location insert sql, the locations Map above is used in the next step (after lines.forEach) to write to deaths and confirmed insert file
         const locationInsert = `INSERT INTO johns_hopkins.location(${columns}) VALUES ('${id}',${locationDataWrapped.join(",")});\n`
 
         fs.appendFile(filename, locationInsert, function (err) {
