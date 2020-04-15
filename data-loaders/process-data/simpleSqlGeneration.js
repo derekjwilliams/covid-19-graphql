@@ -24,8 +24,15 @@ const locationHeaderToSqlColumns = new Map([
 ['Population', {name: 'population', type: 'int8'}]]
 )
 
-const usNonDateHeaderString = Array.from(locationHeaderToSqlColumns.keys()).join(',');
-//'UID,iso2,iso3,code3,FIPS,Admin2,Province_State,Country_Region,Lat,Long_,Combined_Key,Population'
+const keys = Array.from(locationHeaderToSqlColumns.keys())
+const indexOfLat = keys.indexOf('Lat')
+const indexOfLon = keys.indexOf('Long_')
+const databaseColumns = keys.slice()
+databaseColumns.splice(indexOfLat, 2, 'centroid')
+const columns = `id,${databaseColumns}`
+console.log(columns)
+const usNonDateHeaderString = keys.join(',');
+// TODO column name for the point containing Lat and Long_ is centroid
 
 const verifyDataLength = (lines) => {
   if (lines.length < 2) {
@@ -44,11 +51,10 @@ const wrapLocationDataStringParts = (locationData) => {
     const outputLocationData = locationData.slice(0)
     
     let index = 0
-    locationHeaderToSqlColumns.forEach((v,key) => {
-      if(v.type === 'varchar') {
-        outputLocationData[index] = outputLocationData[index][0] !== '"' ? 
-          `'${outputLocationData[index]}'` : 
-          outputLocationData[index].replace(/"/g, '\'')
+    locationHeaderToSqlColumns.forEach((metadata,key) => {
+      if(metadata.type === 'varchar') {
+        const value = outputLocationData[index].replace("'", "''")// double single quotes to escape any single quotes in the data
+        outputLocationData[index] = value[0] !== '"' ? `'${value}'` : value.replace(/"/g, '\'')
       }
       index++
     })
@@ -56,8 +62,6 @@ const wrapLocationDataStringParts = (locationData) => {
     return outputLocationData
   }
 }
-//UID,iso2,iso3,code3,FIPS,Admin2,Province_State,Country_Region,Lat,Long_,Combined_Key,Population
-//UID,iso2,iso3,code3,FIPS,Admin2,Province_State,Country_Region,Lat,Long_,Combined_Key
 
 const validHeader = lines[0].startsWith(usNonDateHeaderString)
 const validDataLength = verifyDataLength(lines);
@@ -68,8 +72,22 @@ if (validHeader && validDataLength) {
                   .split(',')
                   .filter((header, index) => index > usNonDateHeaderString.split(',').length)
                   .map(rawDate => moment.utc(rawDate, "MM/DD/YY").toISOString())
-  //console.log(dates)
   const regex = /,(?=(?:(?:[^"]*"){2})*[^"]*$)/
+
+  const filename = '../../db/init/location_inserts.sql'
+  fs.open(filename, 'w', function (err, file) {
+    if (err) {
+      console.log('error' + err)
+      throw err;
+    }
+    console.log(`created ${filename}`);
+  });
+  fs.appendFile(filename, '\covid', function (err) {
+    if (err) {
+      throw err;
+    }
+  });
+
   lines.forEach((line, index) => {
     if (index) {
       const locationData = line.split(regex).filter((value,index) => index < usNonDateHeaderString.split(',').length)
@@ -77,14 +95,18 @@ if (validHeader && validDataLength) {
       if (locationData.length > 1) {
         const locationDataWrapped = wrapLocationDataStringParts(locationData)
         const id = uuid.v4()
-        const lat = locationDataWrapped[8]
-        const lon = locationDataWrapped[9]
-        locationDataWrapped.splice(8, 2, "ST_GeomFromText('POINT(" + lon + " " + lat + ")', 4326)")
-
+        const lat = locationDataWrapped[indexOfLat]
+        const lon = locationDataWrapped[indexOfLon]
+        locationDataWrapped.splice(indexOfLat, 2, "ST_GeomFromText('POINT(" + lon + " " + lat + ")', 4326)")
         locations.set(locationDataWrapped[0], locationDataWrapped)
-        const columns = 'id,UID,iso2,iso3,code3,FIPS,Admin2,Province_State,Country_Region,Lat,Long_,Combined_Key,Population'
-        const locationInsert = `INSERT INTO johns_hopkins.location(${columns}) VALUES ('${id}',${locationDataWrapped.join(",")});`
-        console.log(locationInsert)
+
+        const locationInsert = `INSERT INTO johns_hopkins.location(${columns}) VALUES ('${id}',${locationDataWrapped.join(",")});\n`
+
+        fs.appendFile(filename, locationInsert, function (err) {
+          if (err) {
+            throw err;
+          }
+        });
       }
     }
   })
