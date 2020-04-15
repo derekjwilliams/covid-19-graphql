@@ -99,7 +99,8 @@ if (validHeader && validDataLength) {
         const lon = locationDataWrapped[indexOfLon]
         locationDataWrapped.splice(indexOfLat, 2, "ST_GeomFromText('POINT(" + lon + " " + lat + ")', 4326)")
         locations.set(locationDataWrapped[0], locationDataWrapped)
-
+        
+        // write  location insert sql, locations Map above is used in the next step (after lines.forEach) to write to deaths and confirmed insert file
         const locationInsert = `INSERT INTO johns_hopkins.location(${columns}) VALUES ('${id}',${locationDataWrapped.join(",")});\n`
 
         fs.appendFile(filename, locationInsert, function (err) {
@@ -110,4 +111,9 @@ if (validHeader && validDataLength) {
       }
     }
   })
+
+  // at this point locations Map contains all of the locations, also need to open and process US are time_series_covid_confirmed_US 
+  // using the UID from the locations Map
+  // TODO read .env file to get list of files to process, at this point there is no US recovered file
+
 }
