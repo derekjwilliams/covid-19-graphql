@@ -112,8 +112,9 @@ if (validHeader && validDataLength) {
     }
   })
 
-  // at this point locations Map contains all of the locations, also need to open and process US are time_series_covid_confirmed_US 
+  // at this point locations Map contains all of the locations, lines contains all of the death data.
+  // TODO Open and process time_series_covid_confirmed_US, at this point in time (April 18) there is no US recovered file 
   // using the UID from the locations Map
-  // TODO read .env file to get list of files to process, at this point there is no US recovered file
+  // TODO read .env file to get list of files to process
 
 }
