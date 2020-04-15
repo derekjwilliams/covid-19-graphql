@@ -82,7 +82,7 @@ if (validHeader && validDataLength) {
     }
     console.log(`created ${filename}`);
   });
-  fs.appendFile(filename, '\covid', function (err) {
+  fs.appendFile(filename, '\\connect covid', function (err) {
     if (err) {
       throw err;
     }
