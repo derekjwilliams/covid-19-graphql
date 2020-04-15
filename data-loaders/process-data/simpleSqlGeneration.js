@@ -5,7 +5,10 @@ import uuid from 'uuid';
 // This is only for US data, TODO fix for US and Global data, as below
 // const GlobalNonDateHeaderString ='UID,iso2,iso3,code3,FIPS,Admin2,Province_State,Country_Region,Lat,Long_,Combined_Key,Population'
 
-const filenameWithPopulations = '../../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv' // just to get locations with populati
+const defaultPopulationsFilename = '../../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv' // just to get locations with populations
+
+process.env.POPULATIONS_FILENAME || defaultPopulationsFilename
+
 const locations = new Map()
 const lines = fs.readFileSync(filenameWithPopulations, {encoding: 'utf8'}).split('\n')
 
@@ -74,7 +77,7 @@ if (validHeader && validDataLength) {
                   .map(rawDate => moment.utc(rawDate, "MM/DD/YY").toISOString())
   const regex = /,(?=(?:(?:[^"]*"){2})*[^"]*$)/
 
-  const filename = '../../db/init/location_inserts.sql'
+  const filename = '../../db/init/location_inserts.txt'
   fs.open(filename, 'w', function (err, file) {
     if (err) {
       console.log('error' + err)
