@@ -1,62 +1,67 @@
-import fs from 'fs'
+import { promises as fsPromises } from 'fs'
 import moment from 'moment'
 import uuid from 'uuid'
 import dotenv from 'dotenv'
-
 dotenv.config()
 
-// This is only for US data, TODO fix for US and Global data, as below
-// const GlobalNonDateHeaderString ='UID,iso2,iso3,code3,FIPS,Admin2,Province_State,Country_Region,Lat,Long_,Combined_Key,Population'
+const defaultUSPopulationsOrigin = '../../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv' // just to get locations with populations
+const defaultUSDeathsOrigin = '../../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv' // just to get locations with populations
+const defaultUSConfirmedOrigin = '../../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv' // just to get locations with populations
 
-const defaultPopulationsOrigin = '../../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv' // just to get locations with populations
-const defaultDeathsOrigin = '../../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv' // just to get locations with populations
 
-const defaultLocationsInsertDestination = '../../db/init/50-johnshopkins-location-data.sql'
-const defaultDeathsInsertDestination = '../../db/init/51-johnshopkins-death-data.sql'
+const defaultUSLocationsInsertDestination = '../../db/init/50-johnshopkins-us-location-data.sql'
+const defaultUSDeathsInsertDestination = '../../db/init/51-johnshopkins-us-deaths-data.sql'
+const defaultUSConfirmedInsertDestination = '../../db/init/52-johnshopkins-us-confirmed-data.sql'
 
-const populationsOrigin = process.env.POPULATIONS_FILENAME || defaultPopulationsOrigin
-const deathsOrigin = process.env.DEATHS_FILENAME || defaultDeathsOrigin
+const usLocationsInsertDestination = process.env.LOCATIONS_DESTINATION || defaultUSLocationsInsertDestination
+const usDeathsInsertDestination = process.env.DEATHS_DESTINATION || defaultUSDeathsInsertDestination
+const usConfirmedInsertDestination = process.env.DEATHS_DESTINATION || defaultUSConfirmedInsertDestination
 
-const locationsInsertDestination = process.env.LOCATIONS_DESTINATION || defaultLocationsInsertDestination
-const deathsInsertDestination = process.env.DEATHS_DESTINATION || defaultDeathsInsertDestination
-
-const locations = new Map()
-const lines = fs.readFileSync(populationsOrigin, {encoding: 'utf8'}).split('\n')
+const usPopulationsOrigin = process.env.POPULATIONS_FILENAME || defaultUSPopulationsOrigin
+const usDeathsOrigin = process.env.DEATHS_FILENAME || defaultUSDeathsOrigin
+const usConfirmedOrigin = process.env.DEATHS_FILENAME || defaultUSConfirmedOrigin
 
 const locationHeaderToSqlColumns = new Map([
-['UID', {name: 'uid', type: 'int8'}],
-['iso2', {name: 'iso2', length: 2, type: 'varchar'}],
-['iso3', {name: 'iso3', length: 3, type: 'varchar'}],
-['code3', {name: 'code3', type: 'int4'}],
-['FIPS', {name: 'fips', length: 8, type: 'varchar'}],
-['Admin2', {name:  'admin2', length: 128, type: 'varchar'}],
-['Province_State',  {name: 'province_state', length: 128, type: 'varchar'}],
-['Country_Region', {name: 'country_region', length: 128, type: 'varchar'}],
-['Lat', {name: '', type: 'double'}],
-['Long_', {name: '', type: 'double'}],
-['Combined_Key', {name: 'combined_key', length: 256, type: 'varchar'}],
-['Population', {name: 'population', type: 'int8'}]]
-)
+  ['UID', {name: 'uid', type: 'int8'}],
+  ['iso2', {name: 'iso2', length: 2, type: 'varchar'}],
+  ['iso3', {name: 'iso3', length: 3, type: 'varchar'}],
+  ['code3', {name: 'code3', type: 'int4'}],
+  ['FIPS', {name: 'fips', length: 8, type: 'varchar'}],
+  ['Admin2', {name:  'admin2', length: 128, type: 'varchar'}],
+  ['Province_State',  {name: 'province_state', length: 128, type: 'varchar'}],
+  ['Country_Region', {name: 'country_region', length: 128, type: 'varchar'}],
+  ['Lat', {name: '', type: 'double'}],
+  ['Long_', {name: '', type: 'double'}],
+  ['Combined_Key', {name: 'combined_key', length: 256, type: 'varchar'}],
+  ['Population', {name: 'population', type: 'int8'}]]
+  )
+const locationSqlColumns = [
+  'id',
+  'UID',
+  'iso2',
+  'iso3',
+  'code3',
+  'FIPS',
+  'Admin2',
+  'Province_State',
+  'Country_Region',
+  'centroid',
+  'Combined_Key',
+  'Population'
+]
+const countSqlColumns = [
+  'id',
+  'location_id',
+  'time',
+  'count'
+]
 
 const keys = Array.from(locationHeaderToSqlColumns.keys())
 const indexOfLat = keys.indexOf('Lat')
 const indexOfLon = keys.indexOf('Long_')
-const someDatabaseColumns = keys.slice()
-someDatabaseColumns.splice(indexOfLat, 2, 'centroid')
-const databaseColumns = `id,${someDatabaseColumns}`
-const usNonDateHeaderString = keys.join(',');
 
-const verifyDataLength = (lines) => {
-  if (lines.length < 2) {
-    return false
-  }
-  const regex = /,(?=(?:(?:[^"]*"){2})*[^"]*$)/
-  const headerCount = lines[0].split(regex).length
-  return lines.every((line, index, arr) => {
-    const values = line.split(regex)
-    return (index + 1 === arr.length && values.length === 1) || (headerCount === values.length)
-  })
-}
+const usNonDateHeaderString = keys.join(',');
+const regex = /,(?=(?:(?:[^"]*"){2})*[^"]*$)/
 
 const wrapLocationDataStringParts = (locationData) => {
   if (locationData.length > 0) {
@@ -70,101 +75,110 @@ const wrapLocationDataStringParts = (locationData) => {
       }
       index++
     })
-
     return outputLocationData
   }
 }
 
-const validHeader = lines[0].startsWith(usNonDateHeaderString)
-const validDataLength = verifyDataLength(lines);
+// Get a Map with a UUID as the key and location (with population) as the value
+/** 
+ * Result example element
+  '84006067' => {
+    id: "'203260d4-2be9-45cf-af38-c7c067f7f4de'",
+    UID: '84006067',
+    iso2: "'US'",
+    iso3: "'USA'",
+    code3: '840',
+    FIPS: "'6067.0'",
+    Admin2: "'Sacramento'",
+    Province_State: "'California'",
+    Country_Region: "'US'",
+    centroid: "ST_GeomFromText('POINT(-121.34253740000001 38.45106826)', 4326)",
+    Combined_Key: "'Sacramento, California, US'",
+    Population: '1552058' // when population exists
+  }
+*/
+const createLocationsMap = (data) => {
+  const lines = data.split('\n')
+  const result = new Map()
+  lines.forEach((line, index) => {
+    if (index) {
+      const locationData = line.split(regex).filter((_,index) => index < usNonDateHeaderString.split(',').length)
+      if (locationData.length > 1) {
+        const locationDataWrapped = wrapLocationDataStringParts(locationData)
+        const lat = locationDataWrapped[indexOfLat]
+        const lon = locationDataWrapped[indexOfLon]
 
-if (validHeader && validDataLength) {
-  const regex = /,(?=(?:(?:[^"]*"){2})*[^"]*$)/
-
-  // const filename = '../../db/init/50-johnshopkins-location-data.sql'
-  fs.open(locationsInsertDestination, 'w', function (err, file) {
-    if (err) {
-      console.log('error' + err)
-      throw err;
-    }
-    fs.appendFile(locationsInsertDestination, '\\connect covid;\n\n', function (err) {
-      if (err) {
-        throw err;
-      }
-    });
-    lines.forEach((line, index) => {
-      if (index) {
-        const locationData = line.split(regex).filter((value,index) => index < usNonDateHeaderString.split(',').length)
+        // add centroid, replacing LAT and LONG_
+        locationDataWrapped.splice(indexOfLat, 2, "ST_GeomFromText('POINT(" + lon + " " + lat + ")', 4326)")
         
-        if (locationData.length > 1) {
-          const locationDataWrapped = wrapLocationDataStringParts(locationData)
-          const id = uuid.v4()
-          const lat = locationDataWrapped[indexOfLat]
-          const lon = locationDataWrapped[indexOfLon]
-  
-          locationDataWrapped.splice(indexOfLat, 2, "ST_GeomFromText('POINT(" + lon + " " + lat + ")', 4326)")
-         
-          // add our generated UUID to the location data too
-          locations.set(locationDataWrapped[0], locationDataWrapped.unshift(`${id}`))
-          
-          // write  location insert sql, the locations Map above is used in the next step (after lines.forEach) to write to deaths and confirmed insert file
-          const locationInsert = `INSERT INTO johns_hopkins.location(${databaseColumns}) VALUES (${locationDataWrapped.join(",")});\n`
-  
-          fs.appendFile(locationsInsertDestination, locationInsert, function (err) {
-            if (err) {
-              throw err;
-            }
-          });
-        }
-  
+        // add a UUID V4, which is used for the location id in all of the data inserts
+        locationDataWrapped.unshift(`'${uuid.v4()}'`)
+        const values = {}
+        locationSqlColumns.forEach((key,index) => values[key] = locationDataWrapped[index])
+        const uid = locationDataWrapped[1]
+        result.set(uid, values)
       }
-    })
-    console.log(`created ${locationsInsertDestination}`);
-    fs.close(file, (err) => {
-      if (err) throw err;
-    })
+    }
   })
-
-
-
-  // TODO break this into its own function
-  const deathLines = fs.readFileSync(deathsOrigin, {encoding: 'utf8'}).split('\n')
-  
-  //ISOString for the stated of day for the date in the csse date, e.g. 2/23/20 is 2020-02-23T00:00:00.000Z
-                  
-  const dates = deathLines[0]
-                  .split(',')
-                  .filter((header, index) => index >= usNonDateHeaderString.split(',').length)
-                  .map(rawDate => moment.utc(rawDate, "MM/DD/YY").toISOString())
-
-  fs.open(deathsInsertDestination, 'w', function (err, file) {
-
-    deathLines.forEach((line,index) => {
-      
-      const UID = line.split(',')[0]
-      let counts = line.split(',').slice()    
-      counts.splice(0, keys.length + 2)
-      
-      if (counts.length === dates.length) {
-        counts.forEach((count, ci) => {
-          const countId = uuid.v4()
-          const deathInsert = `INSERT INTO johns_hopkins.death_count(id,location_id,time,count) VALUES ('${countId}',${UID},'${dates[ci]}',${count});\n`
-
-          fs.appendFile(deathsInsertDestination, deathInsert, function (err) {
-            if (err) {
-              throw err;
-            }
-          })
-
-        })
-      }
-    })
-
-    fs.close(file, (err) => {
-      if (err) throw err;
-    })
-
-  })
-
-  
+  return result
 }
+
+const createLocationInserts = (locationsMap = {}) => {
+  const result = []
+  locationsMap.forEach((value, key) => {
+    const values = Object.values(value).join(',')
+    const insertStatement = `INSERT INTO johns_hopkins.location(${locationSqlColumns}) VALUES (${values});`
+    result.push(insertStatement)
+  })
+  return result
+}
+
+const createCountInserts = (locationsMap = {}, data = {}, tableName = 'none') => {
+  const result = []
+  const lines = data.split('\n')
+  const header = lines[0]
+  const headers = header.split(regex)
+  const last = headers.indexOf('Population') > 0 ? headers.indexOf('Population') : headers.indexOf('Combined_Key')
+  
+  const dates = header.split(regex)
+                      .filter((_,index) => index > last)
+                      .map(rawDate => moment.utc(rawDate, 'MM/DD/YY').toISOString())
+
+  lines.forEach((line, index) => {
+    if (index) {
+      const location = locationsMap.get(line.split(',')[0])
+      if (location !== undefined) {
+        const counts = line.split(regex).filter((_,index) => index > last)
+        if (counts.length === dates.length) {
+          const id = location['id']
+          dates.forEach((date, index) => 
+            result.push( `INSERT INTO johns_hopkins.${tableName}(${countSqlColumns}) VALUES ('${uuid.v4()}',${id},'${date}', ${counts[index]});`)            
+          )
+        }
+      }
+    }
+  })
+  return result
+}
+
+const processUSData = async () => 
+{
+  const rawPopulationData = await fsPromises.readFile(usPopulationsOrigin, 'utf8')
+  const rawDeathsData = await fsPromises.readFile(usDeathsOrigin, 'utf8')
+  const rawConfirmedData = await fsPromises.readFile(usConfirmedOrigin, 'utf8')
+
+  const locationsMap = createLocationsMap(rawPopulationData)
+  const locationInserts = createLocationInserts(locationsMap)
+  await fsPromises.writeFile(usLocationsInsertDestination, locationInserts.join('\n'))
+  console.log('locations row count: ', locationInserts.length)
+
+  const deathInserts = createCountInserts(locationsMap, rawDeathsData, 'death_count')
+  await fsPromises.writeFile(usDeathsInsertDestination, deathInserts.join('\n'))
+  console.log('deaths row count: ', deathInserts.length)
+
+  const confirmedInserts = createCountInserts(locationsMap, rawConfirmedData, 'confirmed_count')
+  await fsPromises.writeFile(usConfirmedInsertDestination, confirmedInserts.join('\n'))
+  console.log('confirmed row count: ', confirmedInserts.length)
+}
+
+ processUSData()
