@@ -67,3 +67,17 @@ See https://www.apple.com/covid19/mobility. The data-loaders/example-data folder
 
 See https://github.com/pastelsky/covid-19-mobility-tracker. Todo, create schema for this data
 
+## Features List
+
+- [x] Database Schemas (compatible with TimescaleDB)
+- [x] Docker File for GraphQL Service
+- [x] Docker Compose File
+- [x] Data Loader for US Locations
+- [ ] Data Loader for Global Locations
+- [x] Data Loader for US Data
+- [ ] Data Loader for Global Data
+- [ ] Automatic Incremental Loading of New Data from JohnsHopkins (and Mobility Services)
+- [ ] TimeScale DB
+- [x] Apple Mobility Schema
+
+

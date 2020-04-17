@@ -171,4 +171,4 @@ const processUSData = async () =>
   console.log('confirmed row count: ', confirmedInserts.length)
 }
 
- processUSData()
+processUSData()
