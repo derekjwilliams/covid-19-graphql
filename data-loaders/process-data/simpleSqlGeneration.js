@@ -142,7 +142,7 @@ const createCountInserts = (locationsMap = {}, data = '', tableName = 'none') =>
         const counts = line.split(regex).filter((_,index) => index > last)
         if (counts.length === dates.length) {
           dates.forEach((date, index) => 
-            result.push( `INSERT INTO johns_hopkins.${tableName}(${countSqlColumns}) VALUES ('${uuid.v4()}',${location['id']},'${date}', ${counts[index]});`)            
+            result.push( `INSERT INTO johns_hopkins.${tableName}(${countSqlColumns}) VALUES ('${uuid.v4()}',${location['id']},'${date}', ${counts[index]});`)
           )
         }
       }
