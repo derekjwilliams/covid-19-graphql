@@ -4,22 +4,14 @@ import uuid from 'uuid'
 import dotenv from 'dotenv'
 dotenv.config()
 
-const defaultUSPopulationsOrigin = '../../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv' // just to get locations with populations
-const defaultUSDeathsOrigin = '../../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv' // just to get locations with populations
-const defaultUSConfirmedOrigin = '../../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv' // just to get locations with populations
+const usLocationsInsertDestination = process.env.US_LOCATIONS_DESTINATION || '../../db/init/50-johnshopkins-us-location-data.sql'
+const usDeathsInsertDestination = process.env.US_DEATHS_DESTINATION || '../../db/init/51-johnshopkins-us-deaths-data.sql'
+const usConfirmedInsertDestination = process.env.US_CONFIRMED_DESTINATION || '../../db/init/52-johnshopkins-us-confirmed-data.sql'
 
-
-const defaultUSLocationsInsertDestination = '../../db/init/50-johnshopkins-us-location-data.sql'
-const defaultUSDeathsInsertDestination = '../../db/init/51-johnshopkins-us-deaths-data.sql'
-const defaultUSConfirmedInsertDestination = '../../db/init/52-johnshopkins-us-confirmed-data.sql'
-
-const usLocationsInsertDestination = process.env.LOCATIONS_DESTINATION || defaultUSLocationsInsertDestination
-const usDeathsInsertDestination = process.env.DEATHS_DESTINATION || defaultUSDeathsInsertDestination
-const usConfirmedInsertDestination = process.env.DEATHS_DESTINATION || defaultUSConfirmedInsertDestination
-
-const usPopulationsOrigin = process.env.POPULATIONS_FILENAME || defaultUSPopulationsOrigin
-const usDeathsOrigin = process.env.DEATHS_FILENAME || defaultUSDeathsOrigin
-const usConfirmedOrigin = process.env.DEATHS_FILENAME || defaultUSConfirmedOrigin
+// usPopulationsOrigin is used to get locations with populations
+const usPopulationsOrigin = process.env.POPULATIONS_FILENAME || '../../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv' 
+const usDeathsOrigin = process.env.DEATHS_FILENAME || '../../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv'
+const usConfirmedOrigin = process.env.DEATHS_FILENAME ||  '../../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv'
 
 const locationHeaderToSqlColumns = new Map([
   ['UID', {name: 'uid', type: 'int8'}],
