@@ -70,14 +70,19 @@ See https://github.com/pastelsky/covid-19-mobility-tracker. Todo, create schema 
 ## Features List
 
 - [x] Database Schemas (compatible with TimescaleDB)
+- [x] GraphQL Service (Node/Express/Apollo)
+- [ ] OpenAPI 3 Service (Haskell)
 - [x] Docker File for GraphQL Service
 - [x] Docker Compose File
 - [x] Data Loader for US Locations
 - [ ] Data Loader for Global Locations
 - [x] Data Loader for US Data
 - [ ] Data Loader for Global Data
-- [ ] Automatic Incremental Loading of New Data from JohnsHopkins (and Mobility Services)
-- [ ] TimeScale DB
+- [ ] Automatic Incremental Loading of New Data from GitHub (e.g. WHO, JohnsHopkins, Apple Mobility Services)
+- [i] Apollo Federation to Provide Unified Service (e.g. WHO, JohnsHopkins, Apple Mobility Services)
+- [ ] TimeScale DB (Timescaledb Postgres 12 Support is in prerelease, use Postgresql 11 in Docker for now)
 - [x] Apple Mobility Schema
+- [ ] Reference D3 Crossfilter Application
+- [ ] Reference React Application
 
 
