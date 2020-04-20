@@ -59,7 +59,7 @@ Getting case counts in the US
 
 ### Apple
 
-See https://www.apple.com/covid19/mobility. The data-loaders/example-data folder contains the schema for the apple data
+See https://www.apple.com/covid19/mobility. The apple-mobility/init folder contains the schema for the apple data
 
 ### Google
 
