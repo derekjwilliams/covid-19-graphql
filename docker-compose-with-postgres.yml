@@ -1,5 +1,19 @@
 version: "3.7"
 services:
+    db:
+        container_name: covid-19-jh-db
+        restart: always
+        image: covid-19-jh-db
+        build:
+            context: ./db
+        volumes:
+            - ./db/data/:/var/lib/data
+        env_file:
+            - ./.env
+        networks:
+            - network
+        ports:
+            - 5432:5432
 
     graphql:
         container_name: covid-19-graphql-service
@@ -9,6 +23,10 @@ services:
             context: ./graphql
         env_file:
             - ./.env
+        depends_on:
+            - db
+        networks:
+            - network
         ports:
             - 5000:5000
         env_file:
@@ -26,3 +44,7 @@ services:
                 "--append-plugins",
                 "postgraphile-plugin-connection-filter,@graphile/postgis,postgraphile-plugin-connection-filter-postgis",
             ]
+networks:
+    network:
+volumes:
+    db:
