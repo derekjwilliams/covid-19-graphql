@@ -92,7 +92,7 @@ There are four Dockerfiles that can be used to run the graphql services, located
 
 * apple-mobility (Apple Mobility data)
 
-* google-mobility (Apple Mobility data)
+* google-mobility (Google Mobility data)
 
 * federation (using Apollo Federation)
 
