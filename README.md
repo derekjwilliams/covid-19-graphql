@@ -67,9 +67,24 @@ See https://www.apple.com/covid19/mobility. The data-loaders/example-data folder
 
 See https://github.com/pastelsky/covid-19-mobility-tracker. Todo, create schema for this data
 
-### Data Loader Code
+## Data Loader Code
 
-See code in data-loaders/process-data
+### Johns Hopkins COVID-19 death, cases, and recoveries
+
+
+See `/data-loaders/process-data/simpleSqlGeneration.js`
+
+This reads the Johns Hopkins time series data and creates sql file to create the `johns_hopkins` schema () and sql files to insert the death and confirmed cases data into the database `51-johns-hopkins-us-deaths-data.sql` and `52-johns-hopkins-us-confirmed-data.sql`.  Example input data is provided in the data-loaders/example-data directory.  To load the latest, one should perform a git clone of the Johns Hopkins github data repository (https://github.com/CSSEGISandData/COVID-19.git) and then run `simpleSqlGeneration.js`.  The location of the input files is specified in `/data-loaders/process-data/.env`, change these to point to the location of the Johns Hopkins time series data.
+
+### Inserting into database
+
+
+Create the the johns_hopkins schema
+
+```
+psql postgres -h 10.0.1.146 -d covid -f 00-johnshopkins-schema.sql
+
+```
 
 ### Running the GraphQL Dockers
 
@@ -83,7 +98,7 @@ There are four Dockerfiles that can be used to run the graphql services, located
 
 * federation
 
-These first three also contain db folders with init scripts that can be used to run Postgres Dockers, but more typically can be used to populate the covid database.  
+These first three also contain db folders with init scripts that can be used to run a Postgres Docker (e.g. for development without a local PostgresQL), but more typically can be used to populate the covid database in a local instance of Postgresql (for development), or a cloud base Postgres database in production.  
 
 To access the local database the pg_hba.conf and postgresql.conf files will need to be updated. To find the correct location of these files you can as postgresql using the psq command:
 
@@ -123,9 +138,3 @@ In production one would use a dedicated database service, for example an RDS dat
 - [x] Apple Mobility Schema
 - [ ] Reference D3 Crossfilter Application
 - [ ] Reference React Application
-
-
-
-
-
-
