@@ -67,6 +67,45 @@ See https://www.apple.com/covid19/mobility. The data-loaders/example-data folder
 
 See https://github.com/pastelsky/covid-19-mobility-tracker. Todo, create schema for this data
 
+### Data Loader Code
+
+See code in data-loaders/process-data
+
+### Running the GraphQL Dockers
+
+There are four Dockerfiles that can be used to run the graphql services, located in the following directories
+
+* graphql (Johns Hopkins GraphQL service with deaths, recoveries, and confirmed cases by location and date)
+
+* apple-mobility (Apple Mobility data, )
+
+* google-mobility
+
+* federation
+
+These first three also contain db folders with init scripts that can be used to run Postgres Dockers, but more typically can be used to populate the covid database.  
+
+To access the local database the pg_hba.conf and postgresql.conf files will need to be updated. To find the correct location of these files you can as postgresql using the psq command:
+
+```
+psql -U postgres -c 'SHOW config_file'
+psql -U postgres -c 'SHOW SHOW hba_file'
+```
+
+The entries that need to be changed are `listen_addresses` in postgresql.conf and `host` entry in pg_hba.conf, for example:
+
+```
+listen_addresses='*' #only for dev, narrow this for production
+```
+
+and
+
+```
+host covid postgres 10.0.1.146/16 trust # Allowing docker container connections to host db
+```
+
+In production one would use a dedicated database service, for example an RDS database (in AWS), a Postgresql database in Heroku, or Azure Postgresql.
+
 ## Features List
 
 - [x] Database Schemas (compatible with TimescaleDB)
@@ -85,8 +124,8 @@ See https://github.com/pastelsky/covid-19-mobility-tracker. Todo, create schema 
 - [ ] Reference D3 Crossfilter Application
 - [ ] Reference React Application
 
-### Data Loader Code
 
-See code in data-loaders/process-data
+
+
 
 
