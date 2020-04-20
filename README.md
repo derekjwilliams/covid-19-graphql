@@ -98,7 +98,7 @@ There are four Dockerfiles that can be used to run the graphql services, located
 
 * federation
 
-These first three also contain db folders with init scripts that can be used to run a Postgres Docker (e.g. for development without a local PostgresQL), but more typically can be used to populate the covid database in a local instance of Postgresql (for development), or a cloud base Postgres database in production.  
+These first three also contain db folders with init scripts that can be used to run a Postgres Docker (e.g. for development without a local Postgresql), but more typically can be used to populate the covid database in a local instance of Postgresql (for development), or a cloud base Postgres database in production.  
 
 To access the local database the pg_hba.conf and postgresql.conf files will need to be updated. To find the correct location of these files you can as postgresql using the psq command:
 
