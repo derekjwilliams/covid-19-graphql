@@ -90,11 +90,11 @@ There are four Dockerfiles that can be used to run the graphql services, located
 
 * graphql (Johns Hopkins GraphQL service with deaths, recoveries, and confirmed cases by location and date)
 
-* apple-mobility (Apple Mobility data, )
+* apple-mobility (Apple Mobility data)
 
-* google-mobility
+* google-mobility (Apple Mobility data)
 
-* federation
+* federation (using Apollo Federation)
 
 These first three also contain db folders with init scripts that can be used to run a Postgres Docker (e.g. for development without a local Postgresql), but more typically can be used to populate the covid database in a local instance of Postgresql (for development), or a cloud base Postgres database in production.  
 
@@ -119,7 +119,7 @@ host covid postgres 10.0.1.146/16 trust # Allowing docker container connections 
 
 In production one would use a dedicated database service, for example an RDS database (in AWS), a Postgresql database in Heroku, or Azure Postgresql.
 
-*Note: if using the provided docker-compose yml, The database is stored in the postgres Docker container, so to start fresh delete any old container first; otherwise the init scripts will not run.  The database is also very large, on the order of 900,000 rows, so running in docker-compose takes a very, very long time to load.  To avoid this run Postgres locally instead of in a Docker, or (to just look at a few hundred locations, to get a feel for the API), shorten the case, death, and recovery sql files*
+*Note: if using the provided docker-compose yml, The database is stored in the postgres Docker container.  This means that in order to start fresh the old containers need to be deleted first; otherwise the init scripts will not run.  The database is also very large, on the order of 900,000 rows, so running in docker-compose takes a very, very long time to load.  To avoid this run Postgres locally instead of in a Docker, or (to just look at a few hundred locations, to get a feel for the API), shorten the case, death, and recovery sql files*
 
 ## Features List
 
