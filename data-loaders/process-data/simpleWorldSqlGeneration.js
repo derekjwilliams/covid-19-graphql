@@ -16,32 +16,18 @@ const globalDeathsOrigin = process.env.DEATHS_FILENAME || '../../../COVID-19/css
 const globalConfirmedOrigin = process.env.DEATHS_FILENAME ||  '../../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv'
 const globalRecoveredOrigin = process.env.DEATHS_FILENAME ||  '../../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv'
 
+Province/State,Country/Region,Lat,Long
+
 const locationHeaderToSqlColumns = new Map([
-  ['UID', {name: 'uid', type: 'int8'}],
-  ['iso2', {name: 'iso2', length: 2, type: 'varchar'}],
-  ['iso3', {name: 'iso3', length: 3, type: 'varchar'}],
-  ['code3', {name: 'code3', type: 'int4'}],
-  ['FIPS', {name: 'fips', length: 8, type: 'varchar'}],
-  ['Admin2', {name:  'admin2', length: 128, type: 'varchar'}],
   ['Province_State',  {name: 'province_state', length: 128, type: 'varchar'}],
   ['Country_Region', {name: 'country_region', length: 128, type: 'varchar'}],
   ['Lat', {name: '', type: 'double'}],
-  ['Long_', {name: '', type: 'double'}],
-  ['Combined_Key', {name: 'combined_key', length: 256, type: 'varchar'}],
-  ['Population', {name: 'population', type: 'int8'}]]
+  ['Long', {name: '', type: 'double'}]]
   )
 const locationSqlColumns = [
-  'id',
-  'UID',
-  'iso2',
-  'iso3',
-  'code3',
-  'FIPS',
-  'Admin2',
   'Province_State',
   'Country_Region',
   'centroid',
-  'Combined_Key',
   'Population'
 ]
 const countSqlColumns = [
