@@ -121,6 +121,10 @@ In production one would use a dedicated database service, for example an RDS dat
 
 *Note: if using the provided docker-compose yml, The database is stored in the postgres Docker container.  This means that in order to start fresh the old containers need to be deleted first; otherwise the init scripts will not run.  The database is also very large, on the order of 900,000 rows, so running in docker-compose takes a very, very long time to load.  To avoid this run Postgres locally instead of in a Docker, or (to just look at a few hundred locations, to get a feel for the API), shorten the case, death, and recovery sql files*
 
+## Population Data
+
+Johns Hopkins has the population data per county in the `time_series_covid19_deaths_US.csv` file, but no population is provided for the global data, so the population data from the UN is used, see `example-data/WPP2019_TotalPopulationBySex.csv` (https://population.un.org/wpp/Download/Standard/CSV/). This CSV file uses ISO 3166 country codes (LocID column), see https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes for a list of country codes, this cooresponds to the code3 column in the Postgresql locations table, i.e. LocID in the UN data is code3 in the Johns Hopkins data.  In order to include the province data the location uid (which is used on the US data ending at 84099999) will be added, starting at 90000000, e.g. `British Columbia,Canada` might have a uid of 90000301, with a code3 of 124.  Since there is no row for Canada, and the UN data does not break down population by province, individual country rows will be added for countries that include provinces, e.g. Australia, Canada, China, Denmark, France, United States, Netherlands, United Kingdom.  There are outliers in the Johns Hopkins, global data, e.g. `Recovered, Canada`, these can be identified by having a Lat and Lon of `0.0,0.0`, this data is not included for now.
+
 ## Features List
 
 - [x] Database Schemas (compatible with TimescaleDB)
