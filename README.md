@@ -1,12 +1,10 @@
 # covid-19-graphql
 Simple postgraphile based graphql API based on the data from Johns Hopkins, see https://github.com/CSSEGISandData/COVID-19.git
 
-In addition, additional data will be available, e.g. mobility data from Apple and Google
+Mobility data services based on the mobility data from Apple and Google are also provided.  
 
-## Note 
+A simple federation service (Apollo Federation) is provided to connect these three services together, allowing the client to query for both Johns Hopkins case counts and mobility information for a set of locations in one graphql query.
 
-The database is stored in the postgres Docker container, 
-so to start fresh delete that container first, otherwise the init scripts will not run
 
 ## Postgraphile Plugins Used (installed globally for now)
 
@@ -120,6 +118,8 @@ host covid postgres 10.0.1.146/16 trust # Allowing docker container connections 
 ```
 
 In production one would use a dedicated database service, for example an RDS database (in AWS), a Postgresql database in Heroku, or Azure Postgresql.
+
+*Note: if using the provided docker-compose yml, The database is stored in the postgres Docker container, so to start fresh delete any old container first; otherwise the init scripts will not run.  The database is also very large, on the order of 900,000 rows, so running in docker-compose takes a very, very long time to load.  To avoid this run Postgres locally instead of in a Docker, or (to just look at a few hundred locations, to get a feel for the API), shorten the case, death, and recovery sql files*
 
 ## Features List
 
