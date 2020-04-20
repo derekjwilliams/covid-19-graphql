@@ -16,8 +16,6 @@ const globalDeathsOrigin = process.env.DEATHS_FILENAME || '../../../COVID-19/css
 const globalConfirmedOrigin = process.env.DEATHS_FILENAME ||  '../../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv'
 const globalRecoveredOrigin = process.env.DEATHS_FILENAME ||  '../../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv'
 
-Province/State,Country/Region,Lat,Long
-
 const locationHeaderToSqlColumns = new Map([
   ['Province_State',  {name: 'province_state', length: 128, type: 'varchar'}],
   ['Country_Region', {name: 'country_region', length: 128, type: 'varchar'}],
@@ -142,11 +140,12 @@ const createCountInserts = (locationsMap = {}, data = '', tableName = 'none') =>
 
 const processUSData = async () => 
 {
-  const rawPopulationData = await fsPromises.readFile(usPopulationsOrigin, 'utf8')
-  const rawDeathsData = await fsPromises.readFile(usDeathsOrigin, 'utf8')
-  const rawConfirmedData = await fsPromises.readFile(usConfirmedOrigin, 'utf8')
+  // const rawPopulationData = await fsPromises.readFile(usPopulationsOrigin, 'utf8')
+  const rawDeathsData = await fsPromises.readFile(globalDeathsOrigin, 'utf8')
+  const rawConfirmedData = await fsPromises.readFile(globalConfirmedOrigin, 'utf8')
+  const rawRecoveredData = await fsPromises.readFile(globalRecoveredOrigin, 'utf8')
 
-  const locationsMap = createLocationsMap(rawPopulationData)
+  //const locationsMap = createLocationsMap(rawPopulationData)
   const locationInserts = createLocationInserts(locationsMap)
   await fsPromises.writeFile(usLocationsInsertDestination, locationInserts.join('\n'))
   console.log('locations row count: ', locationInserts.length)
