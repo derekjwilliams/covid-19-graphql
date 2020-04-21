@@ -154,7 +154,7 @@ This reads the Johns Hopkins time series data and creates sql file to create the
 ### Inserting into database
 
 
-Create the the johns_hopkins schema
+Create the the johns_hopkins schema, for instance (10.0.1.146 is the host in this example):
 
 ```
 psql postgres -h 10.0.1.146 -d covid -f 00-johnshopkins-schema.sql
@@ -179,7 +179,7 @@ To access the local database the pg_hba.conf and postgresql.conf files will need
 
 ```
 psql -U postgres -c 'SHOW config_file'
-psql -U postgres -c 'SHOW SHOW hba_file'
+psql -U postgres -c 'SHOW hba_file'
 ```
 
 The entries that need to be changed are `listen_addresses` in postgresql.conf and `host` entry in pg_hba.conf, for example:
