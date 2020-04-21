@@ -12,6 +12,7 @@
     "dotenv": "^8.2.0",
     "fs": "0.0.1-security",
     "moment": "^2.24.0",
+    "node-fetch": "^2.6.0",
     "uuid": "^7.0.3"
   },
   "type": "module"
