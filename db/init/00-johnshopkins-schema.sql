@@ -163,3 +163,5 @@ COMMENT ON COLUMN johns_hopkins.missing_recovered_count.missing_reason IS
 CREATE INDEX death_time_idx ON death_count USING BTREE(time);
 CREATE INDEX case_time_idx ON johns_hopkins.case_count USING BTREE(time);
 CREATE INDEX recovered_time_idx ON johns_hopkins.recovered_count USING BTREE(time);
+
+CREATE INDEX location_centroid_idx ON johns_hopkins.location USING GIST (centroid);
