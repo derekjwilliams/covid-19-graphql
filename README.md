@@ -32,7 +32,7 @@ https://www.npmjs.com/package/postgraphile-plugin-connection-filter-postgis
 
 ```
 {
-  allLocations(filter: { iso3: { equalTo: "USA" } }) {
+  allLocations(first 10 filter: { iso3: { equalTo: "USA" } }) {
     nodes {
       centroid {
         srid
