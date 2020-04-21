@@ -55,7 +55,7 @@ https://www.npmjs.com/package/postgraphile-plugin-connection-filter-postgis
 
 ```
 
-### Deaths in Larimer and Multnomah counties between April 7 and April 18
+### Deaths in Larimer and Multnomah counties between April 9 (inclusive) and April 17 (exclusive)
 
 ```
 {
@@ -77,8 +77,8 @@ https://www.npmjs.com/package/postgraphile-plugin-connection-filter-postgis
         orderBy: TIME_ASC
         filter: {
           and: [
-            { time: { greaterThan: "2020-04-07T00:00Z" } }
-            { time: { lessThan: "2020-04-18T00:00Z" } }
+            { time: { greaterThan: "2020-04-09T00:00Z" } }
+            { time: { lessThanOrEqualTo: "2020-04-18T00:00Z" } }
           ]
         }
       ) {
