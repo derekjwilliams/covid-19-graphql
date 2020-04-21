@@ -28,13 +28,13 @@ https://www.npmjs.com/package/postgraphile-plugin-connection-filter-postgis
 
 ## Example Queries
 
-Getting case counts in the US
+### Case Counts for the first 10 locations in the US on April 7
 
-```{
+```
+{
   allLocations(filter: { iso3: { equalTo: "USA" } }) {
     nodes {
       centroid {
-        geojson
         srid
         x
         y
@@ -44,7 +44,7 @@ Getting case counts in the US
       iso3
       code3
       combinedKey
-      caseCountsByLocationId(filter: { time: { equalTo: "2020-04-06" } }) {
+      caseCountsByLocationId(filter: { time: { equalTo: "2020-04-07T00:00Z" } }) {
         nodes {
           count
         }
@@ -53,6 +53,83 @@ Getting case counts in the US
   }
 }
 
+```
+
+### Deaths in Larimer and Multnomah counties between April 7 and April 18
+
+```
+{
+  allLocations(
+    filter: {
+      or: [
+        { admin2: { includes: "Multnomah" } }
+        { admin2: { includes: "Larimer" } }
+      ]
+    }
+  ) {
+    nodes {
+      code3
+      admin2
+      countryRegion
+      provinceState
+      combinedKey
+      deathCountsByLocationId(
+        orderBy: TIME_ASC
+        filter: {
+          and: [
+            { time: { greaterThan: "2020-04-07T00:00Z" } }
+            { time: { lessThan: "2020-04-18T00:00Z" } }
+          ]
+        }
+      ) {
+        nodes {
+          time
+          count
+        }
+      }
+    }
+  }
+}
+```
+
+### Order by Population
+
+```
+{
+  allLocations(
+    first:10
+    orderBy:POPULATION_DESC
+  ) {
+    nodes {
+      iso2
+      iso3
+      code3
+      admin2
+      population
+      centroid {
+        srid
+        x
+        y
+      }
+      countryRegion
+      provinceState
+      combinedKey
+      deathCountsByLocationId(
+        orderBy: TIME_ASC
+        filter: {
+          and: [
+            { time: { equalTo: "2020-04-07T00:00Z" } }
+          ]
+        }
+      ) {
+        nodes {
+          time
+          count
+        }
+      }
+    }
+  }
+}
 ```
 
 ## Mobility Data
