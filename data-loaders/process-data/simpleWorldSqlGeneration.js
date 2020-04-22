@@ -10,7 +10,7 @@ const globalConfirmedInsertDestination = process.env.GLOBAL_CONFIRMED_DESTINATIO
 const globalRecoveredInsertDestination = process.env.GLOBAL_RECOVERED_DESTINATION || '../../db/init/63-johnshopkins-global-recovered-data.sql'
 
 // usPopulationsOrigin is used to get locations with populations
-const globalPopulationsOrigin = process.env.POPULATIONS_FILENAME || '../example-data/global-population.csv' 
+const globalPopulationsOrigin = process.env.GLOBAL_POPULATIONS_FILENAME || '../additional-data/population.csv' 
 
 const globalDeathsOrigin = process.env.GLOBAL_DEATHS_FILENAME || '../../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv'
 const globalConfirmedOrigin = process.env.GLOBAL_CONFIRMED_FILENAME ||  '../../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv'
@@ -79,26 +79,28 @@ const wrapLocationDataStringParts = (locationData) => {
 const createLocationsMap = (data) => {
   const result = new Map()
   const lines = data.split('\n')
-  lines.forEach((line, index) => {
-    if (index) {
-      const locationData = line.split(regex).filter((_,index) => index < usNonDateHeaderString.split(',').length)
-      if (locationData.length > 1) {
-        const locationDataWrapped = wrapLocationDataStringParts(locationData)
-        const lat = locationDataWrapped[indexOfLat]
-        const lon = locationDataWrapped[indexOfLon]
+  debugger
+  console.log(lines)
+  // lines.forEach((line, index) => {
+  //   if (index) {
+  //     const locationData = line.split(regex).filter((_,index) => index < usNonDateHeaderString.split(',').length)
+  //     if (locationData.length > 1) {
+  //       const locationDataWrapped = wrapLocationDataStringParts(locationData)
+  //       const lat = locationDataWrapped[indexOfLat]
+  //       const lon = locationDataWrapped[indexOfLon]
 
-        // add centroid point value, replacing LAT and LONG_
-        locationDataWrapped.splice(indexOfLat, 2, "ST_GeomFromText('POINT(" + lon + " " + lat + ")', 4326)")
+  //       // add centroid point value, replacing LAT and LONG_
+  //       locationDataWrapped.splice(indexOfLat, 2, "ST_GeomFromText('POINT(" + lon + " " + lat + ")', 4326)")
         
-        // add a UUID V4, which is used for the location id in all of the data inserts
-        locationDataWrapped.unshift(`'${uuid.v4()}'`)
-        const values = {}
-        locationSqlColumns.forEach((key,index) => values[key] = locationDataWrapped[index])
-        result.set(locationDataWrapped[1], values)
-      }
-    }
-  })
-  return result
+  //       // add a UUID V4, which is used for the location id in all of the data inserts
+  //       locationDataWrapped.unshift(`'${uuid.v4()}'`)
+  //       const values = {}
+  //       locationSqlColumns.forEach((key,index) => values[key] = locationDataWrapped[index])
+  //       result.set(locationDataWrapped[1], values)
+  //     }
+  //   }
+  // })
+  // return result
 }
 
 const createLocationInserts = (locationsMap = {}) => {
@@ -140,22 +142,30 @@ const createCountInserts = (locationsMap = {}, data = '', tableName = 'none') =>
 
 const processUSData = async () => 
 {
-  // const rawPopulationData = await fsPromises.readFile(usPopulationsOrigin, 'utf8')
+  const rawPopulationData = await fsPromises.readFile(globalPopulationsOrigin, 'utf8')
   const rawDeathsData = await fsPromises.readFile(globalDeathsOrigin, 'utf8')
   const rawConfirmedData = await fsPromises.readFile(globalConfirmedOrigin, 'utf8')
   const rawRecoveredData = await fsPromises.readFile(globalRecoveredOrigin, 'utf8')
 
-  //const locationsMap = createLocationsMap(rawPopulationData)
-  const locationInserts = createLocationInserts(locationsMap)
-  await fsPromises.writeFile(usLocationsInsertDestination, locationInserts.join('\n'))
-  console.log('locations row count: ', locationInserts.length)
+  const locationsMap = createLocationsMap(rawPopulationData)
+  try {
+    const locationInserts = createLocationInserts(locationsMap)
+    await fsPromises.writeFile(usLocationsInsertDestination, locationInserts.join('\n'))
+    console.log('locations row count: ', locationInserts.length)
+  } catch (err) {
+    console.log(err)
+  }
+
+  const recoveredInserts = createCountInserts(locationsMap, rawRecoveredData, 'recovered_count')
+//  await fsPromises.writeFile(globalRecoveredInsertDestination, deathInserts.join('\n'))
+  console.log('recovered row count: ', recoveredInserts.length)
 
   const deathInserts = createCountInserts(locationsMap, rawDeathsData, 'death_count')
-  await fsPromises.writeFile(usDeathsInsertDestination, deathInserts.join('\n'))
+  //await fsPromises.writeFile(globalDeathsInsertDestination, deathInserts.join('\n'))
   console.log('deaths row count: ', deathInserts.length)
 
   const confirmedInserts = createCountInserts(locationsMap, rawConfirmedData, 'case_count')
-  await fsPromises.writeFile(usConfirmedInsertDestination, confirmedInserts.join('\n'))
+  //await fsPromises.writeFile(globalConfirmedInsertDestination, confirmedInserts.join('\n'))
   console.log('confirmed row count: ', confirmedInserts.length)
 }
 
