@@ -276,3 +276,11 @@ Johns Hopkins has the population data per county in the `time_series_covid19_dea
 - [x] Apple Mobility Schema
 - [ ] Reference D3 Crossfilter Application
 - [ ] Reference React Application
+
+### References
+
+Country Centroids are from https://worldmap.harvard.edu/data/geonode:country_centroids_az8, these are not present in the Johns Hopkins Global data
+
+### Other Data Sources
+
+https://covidtracking.com/data
