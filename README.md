@@ -132,6 +132,63 @@ https://www.npmjs.com/package/postgraphile-plugin-connection-filter-postgis
 }
 ```
 
+### Simple Geospatial Query with Point
+
+```
+{
+  allLocations(
+    filter: {
+      centroid: {
+        equals: { type: "Point", coordinates: [-86.64408227, 32.53952745] }
+      }
+    }
+  ) {
+    nodes {
+      admin2
+      provinceState
+      deathCountsByLocationId {
+        totalCount
+      }
+    }
+  }
+}
+```
+
+### Simple Geospatial Within Query (see Postgis [ST_Within](https://postgis.net/docs/ST_Within.html)) with BoundingBox
+
+```
+{
+  allLocations(
+    filter: {
+      centroid: {
+        within: {
+          type: "Polygon"
+          coordinates: [
+            [
+              [-88.0, 32.0]
+              [-86.0, 32.0]
+              [-86.0, 33.0]
+              [-88.0, 33.0]
+              [-88.0, 32.0]
+            ]
+          ]
+        }
+      }
+    }
+  ) {
+    nodes {
+      admin2
+      provinceState
+      deathCountsByLocationId {
+        totalCount
+      }
+    }
+  }
+}
+```
+
+
+
 ## Mobility Data
 
 ### Apple
