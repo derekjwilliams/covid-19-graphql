@@ -154,7 +154,7 @@ https://www.npmjs.com/package/postgraphile-plugin-connection-filter-postgis
 }
 ```
 
-### Simple Geospatial Within Query (see Postgis [ST_Within](https://postgis.net/docs/ST_Within.html)) with BoundingBox
+### Simple Geospatial Within Query (see Postgis [ST_Within](https://postgis.net/docs/ST_Within.html))
 
 ```
 {
