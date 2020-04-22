@@ -9,9 +9,9 @@ const usDeathsInsertDestination = process.env.US_DEATHS_DESTINATION || '../../db
 const usConfirmedInsertDestination = process.env.US_CONFIRMED_DESTINATION || '../../db/init/52-johnshopkins-us-confirmed-data.sql'
 
 // usPopulationsOrigin is used to get locations with populations
-const usPopulationsOrigin = process.env.POPULATIONS_FILENAME || '../../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv' 
-const usDeathsOrigin = process.env.DEATHS_FILENAME || '../../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv'
-const usConfirmedOrigin = process.env.DEATHS_FILENAME ||  '../../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv'
+const usPopulationsOrigin = process.env.US_POPULATIONS_FILENAME || '../../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv' 
+const usDeathsOrigin = process.env.US_DEATHS_FILENAME || '../../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv'
+const usConfirmedOrigin = process.env.US_CONFIRMED_FILENAME ||  '../../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv'
 
 const locationHeaderToSqlColumns = new Map([
   ['UID', {name: 'uid', type: 'int8'}],

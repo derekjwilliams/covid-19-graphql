@@ -4,17 +4,17 @@ import uuid from 'uuid'
 import dotenv from 'dotenv'
 dotenv.config()
 
-const globalLocationsInsertDestination = process.env.global_LOCATIONS_DESTINATION || '../../db/init/60-johnshopkins-global-location-data.sql'
-const globalDeathsInsertDestination = process.env.global_DEATHS_DESTINATION || '../../db/init/61-johnshopkins-global-deaths-data.sql'
-const globalConfirmedInsertDestination = process.env.global_CONFIRMED_DESTINATION || '../../db/init/62-johnshopkins-global-confirmed-data.sql'
-const globalRecoveredInsertDestination = process.env.global_RECOVERED_DESTINATION || '../../db/init/63-johnshopkins-global-recovered-data.sql'
+const globalLocationsInsertDestination = process.env.GLOBAL_LOCATIONS_DESTINATION || '../../db/init/60-johnshopkins-global-location-data.sql'
+const globalDeathsInsertDestination = process.env.GLOBAL_DEATHS_DESTINATION || '../../db/init/61-johnshopkins-global-deaths-data.sql'
+const globalConfirmedInsertDestination = process.env.GLOBAL_CONFIRMED_DESTINATION || '../../db/init/62-johnshopkins-global-confirmed-data.sql'
+const globalRecoveredInsertDestination = process.env.GLOBAL_RECOVERED_DESTINATION || '../../db/init/63-johnshopkins-global-recovered-data.sql'
 
 // usPopulationsOrigin is used to get locations with populations
 const globalPopulationsOrigin = process.env.POPULATIONS_FILENAME || '../example-data/global-population.csv' 
 
-const globalDeathsOrigin = process.env.DEATHS_FILENAME || '../../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv'
-const globalConfirmedOrigin = process.env.DEATHS_FILENAME ||  '../../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv'
-const globalRecoveredOrigin = process.env.DEATHS_FILENAME ||  '../../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv'
+const globalDeathsOrigin = process.env.GLOBAL_DEATHS_FILENAME || '../../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv'
+const globalConfirmedOrigin = process.env.GLOBAL_CONFIRMED_FILENAME ||  '../../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv'
+const globalRecoveredOrigin = process.env.GLOBAL_RECOVERED_FILENAME ||  '../../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv'
 
 const locationHeaderToSqlColumns = new Map([
   ['Province_State',  {name: 'province_state', length: 128, type: 'varchar'}],
