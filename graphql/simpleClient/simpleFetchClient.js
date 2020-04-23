@@ -1,8 +1,9 @@
 const d3 = require("d3-fetch")
 const gql = require("graphql-tag")
 
+
 if (typeof fetch !== 'function') {
-  global.fetch = require('node-fetch-polyfill');
+  global.fetch = require('node-fetch');
 }
 const g = gql`{
   allLocations(first: 1) {
