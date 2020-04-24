@@ -24,6 +24,7 @@ services:
                 "--enhance-graphiql",
                 "--allow-explain",
                 "--dynamic-json",
+                "--cors",
                 "--append-plugins",
                 "postgraphile-plugin-connection-filter,@graphile/postgis,postgraphile-plugin-connection-filter-postgis",
             ]
