@@ -160,8 +160,42 @@ COMMENT ON COLUMN johns_hopkins.missing_recovered_count.missing_reason IS
 
 -- other indices
 
-CREATE INDEX death_time_idx ON death_count USING BTREE(time);
+CREATE INDEX death_time_idx ON johns_hopkins.death_count USING BTREE(time);
 CREATE INDEX case_time_idx ON johns_hopkins.case_count USING BTREE(time);
 CREATE INDEX recovered_time_idx ON johns_hopkins.recovered_count USING BTREE(time);
 
 CREATE INDEX location_centroid_idx ON johns_hopkins.location USING GIST (centroid);
+
+-- jsonb tables
+
+CREATE TABLE johns_hopkins.case_count_jsonb (
+  id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+  location_id uuid NULL,
+  "counts" jsonb NOT NULL
+);
+
+CREATE INDEX case_count_jsonb_idx ON johns_hopkins.case_count_jsonb USING GIN ("counts" jsonb_path_ops);
+
+CREATE TABLE johns_hopkins.death_count_jsonb (
+  id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+  location_id uuid NULL,
+  "counts" jsonb NOT NULL
+);
+
+CREATE INDEX death_count_jsonb_idx ON johns_hopkins.death_count_jsonb USING GIN ("counts" jsonb_path_ops);
+
+CREATE TABLE johns_hopkins.recovered_count_jsonb (
+  id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
+  location_id uuid NULL,
+  "counts" jsonb NOT NULL
+);
+
+CREATE INDEX recovered_count_jsonb_idx ON johns_hopkins.recovered_count_jsonb USING GIN ("counts" jsonb_path_ops);
+
+ALTER TABLE johns_hopkins.case_count_jsonb ADD CONSTRAINT case_count_jsonb_pkey PRIMARY KEY (id);
+ALTER TABLE johns_hopkins.case_count_jsonb ADD CONSTRAINT case_count_jsonb_location_id_fkey FOREIGN KEY (location_id) REFERENCES johns_hopkins.location(id) ON UPDATE CASCADE;
+ALTER TABLE johns_hopkins.death_count_jsonb ADD CONSTRAINT death_count_jsonb_pkey PRIMARY KEY (id);
+ALTER TABLE johns_hopkins.death_count_jsonb ADD CONSTRAINT death_count_jsonb_location_id_fkey FOREIGN KEY (location_id) REFERENCES johns_hopkins.location(id) ON UPDATE CASCADE;
+ALTER TABLE johns_hopkins.recovered_count_jsonb ADD CONSTRAINT recovered_count_jsonb_pkey PRIMARY KEY (id);
+ALTER TABLE johns_hopkins.recovered_count_jsonb ADD CONSTRAINT recovered_count_jsonb_location_id_fkey FOREIGN KEY (location_id) REFERENCES johns_hopkins.location(id) ON UPDATE CASCADE;
+
