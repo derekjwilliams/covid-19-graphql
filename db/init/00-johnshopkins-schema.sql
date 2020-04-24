@@ -18,7 +18,7 @@ CREATE TABLE johns_hopkins.location (
     country_region varchar(128),
     combined_key varchar(256),
     centroid geometry(POINT, 4326),
-    population int8
+    population int4
 );
 
 COMMENT ON TABLE johns_hopkins.location IS
@@ -57,7 +57,7 @@ CREATE TABLE johns_hopkins.case_count (
     id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
     location_id uuid,
     "time" TIMESTAMPTZ not NULL,
-    "count" INT8
+    "count" INT4
  );
 ALTER TABLE johns_hopkins.case_count ADD CONSTRAINT case_count_pkey PRIMARY KEY (id);
 
@@ -93,7 +93,7 @@ CREATE TABLE johns_hopkins.death_count (
     id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
     location_id uuid,
     "time" TIMESTAMPTZ not NULL,
-    "count" INT8
+    "count" INT4
  );
 
 ALTER TABLE johns_hopkins.death_count ADD CONSTRAINT death_count_pkey PRIMARY KEY (id);
@@ -128,7 +128,7 @@ CREATE TABLE johns_hopkins.recovered_count (
     id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
     location_id uuid,
     "time" TIMESTAMPTZ not NULL,
-    "count" INT8
+    "count" INT4
  );
 ALTER TABLE johns_hopkins.recovered_count ADD CONSTRAINT recovered_count_pkey PRIMARY KEY (id);
 ALTER TABLE johns_hopkins.recovered_count ADD CONSTRAINT recovered_count_location_id_fkey FOREIGN KEY (location_id) REFERENCES johns_hopkins.location(id) ON UPDATE CASCADE;
