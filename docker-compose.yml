@@ -23,6 +23,7 @@ services:
                 "johns_hopkins,apple_mobility",
                 "--enhance-graphiql",
                 "--allow-explain",
+                "--dynamic-json",
                 "--append-plugins",
                 "postgraphile-plugin-connection-filter,@graphile/postgis,postgraphile-plugin-connection-filter-postgis",
             ]

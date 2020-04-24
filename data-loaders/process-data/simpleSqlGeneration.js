@@ -7,6 +7,8 @@ dotenv.config()
 const usLocationsInsertDestination = process.env.US_LOCATIONS_DESTINATION || '../../db/init/50-johnshopkins-us-location-data.sql'
 const usDeathsInsertDestination = process.env.US_DEATHS_DESTINATION || '../../db/init/51-johnshopkins-us-deaths-data.sql'
 const usConfirmedInsertDestination = process.env.US_CONFIRMED_DESTINATION || '../../db/init/52-johnshopkins-us-confirmed-data.sql'
+const usDeathsJSONBInsertDestination = process.env.US_DEATH_DESTINATION_JSON || '../../db/init/54-johnshopkins-us-death-data-jsonb.sql'
+const usConfirmedJSONBInsertDestination = process.env.US_CONFIRMED_DESTINATION_JSON || '../../db/init/55-johnshopkins-us-confirmed-data-jsonb.sql'
 
 // usPopulationsOrigin is used to get locations with populations
 const usPopulationsOrigin = process.env.US_POPULATIONS_FILENAME || '../../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv' 
@@ -46,6 +48,11 @@ const countSqlColumns = [
   'location_id',
   'time',
   'count'
+]
+const countJsonbSqlColumns = [
+  'id',
+  'location_id',
+  'counts'
 ]
 
 const keys = Array.from(locationHeaderToSqlColumns.keys())
@@ -142,7 +149,7 @@ const createCountInserts = (locationsMap = {}, data = '', tableName = 'none') =>
         const counts = line.split(regex).filter((_,index) => index > last)
         if (counts.length === dates.length) {
           dates.forEach((date, index) => 
-            result.push( `INSERT INTO johns_hopkins.${tableName}(${countSqlColumns}) VALUES ('${uuid.v4()}',${location['id']},'${date}', ${counts[index]});`)
+            result.push(`INSERT INTO johns_hopkins.${tableName}(${countSqlColumns}) VALUES ('${uuid.v4()}',${location['id']},'${date}', ${counts[index]});`)
           )
         }
       }
@@ -150,6 +157,35 @@ const createCountInserts = (locationsMap = {}, data = '', tableName = 'none') =>
   })
   return result
 }
+
+const createCountJSONBInserts = (locationsMap = {}, data = '', tableName = 'none') => {
+  const result = []
+  const lines = data.split('\n')
+  const header = lines[0]
+  const headers = header.split(regex)
+  const last = headers.indexOf('Population') > 0 ? headers.indexOf('Population') : headers.indexOf('Combined_Key')
+  
+  // create iso dates from input date columns
+  const dates = headers.filter((_,index) => index > last)
+                       .map(d => moment.utc(d, 'MM/DD/YY').toISOString())
+
+  lines.forEach((line, index) => {
+    if (index) {
+      const location = locationsMap.get(line.split(',')[0]) // uid (johns hopkins unique id) is in the 0th column of the counts csv
+      if (location !== undefined) {
+        const timeCounts = []
+        const counts = line.split(regex).filter((_,index) => index > last)
+        if (counts.length === dates.length) {
+          dates.forEach((date, index) => timeCounts.push({time: date, count: +counts[index]}))
+          result.push(`INSERT INTO johns_hopkins.${tableName}(${countJsonbSqlColumns}) VALUES ('${uuid.v4()}',${location['id']},'${JSON.stringify(timeCounts)}');`)
+        }
+      }
+    }
+  })
+  return result
+}
+
+//INSERT INTO johns_hopkins.death_count_jsonb (id,location_id,counts) VALUES ('548c82a4-20ce-4fe9-8a95-1558b0a83cb5','bbaa6667-de9a-4cbc-a612-19d7c9f954ea','{"time":"2020-03-16T00:00:00.000Z", "count" : 0}');
 
 const processUSData = async () => 
 {
@@ -161,6 +197,14 @@ const processUSData = async () =>
   const locationInserts = createLocationInserts(locationsMap)
   await fsPromises.writeFile(usLocationsInsertDestination, locationInserts.join('\n'))
   console.log('locations row count: ', locationInserts.length)
+
+  const deathJSONBInserts = createCountJSONBInserts(locationsMap, rawDeathsData, 'death_count_jsonb')
+  await fsPromises.writeFile(usDeathsJSONBInsertDestination, deathJSONBInserts.join('\n'))
+  console.log('deaths row jsonb count: ', deathJSONBInserts.length)
+
+  const confirmedJSONBInserts = createCountJSONBInserts(locationsMap, rawDeathsData, 'confirmed_count_jsonb')
+  await fsPromises.writeFile(usConfirmedJSONBInsertDestination, confirmedJSONBInserts.join('\n'))
+  console.log('confirmed row jsonb count: ', confirmedJSONBInserts.length)
 
   const deathInserts = createCountInserts(locationsMap, rawDeathsData, 'death_count')
   await fsPromises.writeFile(usDeathsInsertDestination, deathInserts.join('\n'))
