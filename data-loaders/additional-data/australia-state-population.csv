@@ -1,9 +1,9 @@
-name,fips,iso,population
-Australian Capital Territory,AS01,AU-CT,426709
-New South Wales,AS02,AU-NSW,8089526
-Northern Territory,AS03,AU-NT,244300
-Queensland,AS04,AU-QLD,5071000
-South Australia,AU-SA,AS05,1677000
-Tasmania,AS06,AU-TAS,515000
-Victoria,AS07,AU-VIC,6359000
-Western Australia,AS08,AU-WA,2589000
+name,iso,fips,population
+Australian Capital Territory,AU-CT,AS01,426709
+New South Wales,AU-NSW,AS02,8089526
+Northern Territory,AU-NT,AS03,244300
+Queensland,AU-QLD,AS04,5071000
+South Australia,AS05,AU-SA,1677000
+Tasmania,AU-TAS,AS06,515000
+Victoria,AU-VIC,AS07,6359000
+Western Australia,AU-WA,AS08,2589000

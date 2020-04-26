@@ -1,32 +1,32 @@
-name,hasc,iso,gbn,gb,fips,marc,post,population,area,conventional,capital
-Anhui,CN.AH,CN-AH,34,AH,CH01,an,23-24,70829000,140455,Anhwei,Hefei
-Beijing,CN.BJ,CN-BJ,11,BJ,CH22,pe,10,21540000,16808,Peking,Beijing
-Chongqing,CN.CQ,CN-CQ,50,CQ,CH33,cq,40,30480000,82403,Chungking,Chongqing
-Fujian,CN.FJ,CN-FJ,35,FJ,CH07,fu,35-36,38560000,122919,Fukien,Fuzhou
-Gansu,CN.GS,CN-GS,62,GS,CH15,ka,73-74,26370000,459233,Kansu,Lanzhou
-Guangdong,CN.GD,CN-GD,44,GD,CH30,kn,51-52,113460000,178341,Kwangtung,Guangzhou
-Guangxi Zhuang,CN.GX,CN-GX,45,GX,CH16,kc,53-54,48380000,90734,Kwangsi Chuang,Nanning
-Guizhou,CN.GZ,CN-GZ,52,GZ,CH18,kw,55-56,34750000,174976,Kweichow,Guiyang
-Hainan,CN.HA,CN-HI,46,HI,CH31,ha,57,9250000,60438,23335,Hainan,Haikou
-Hebei,CN.HB,CN-HE,13,HE,CH10,hp,05-07,74700000,187240,Hopeh,Shijiazhuang
-Heilongjiang,CN.HL,CN-HL,23,HL,CH08,he,15-16,38310000,431767,Heilungkiang,Harbin
-Henan,CN.HE,CN-HA,41,HA,CH09,ho,45-47,96050000,166310,Honan,Zhengzhou
-Hubei,CN.HU,CN-HB,42,HB,CH12,hh,43-44,59170000,185673,Hupeh,Wuhan
-Hunan,CN.HN,CN-N,43,HN,CH11,hu,41-42,68990000,211231,Hunan,Changsha
-Jiangsu,CN.JS,CN-JS,32,JS,CH04,ku,21-22,80510000,98285,Kiangsu,Nanjing
-Jiangxi,CN.JX,CN-JX,36,JX,CH03,ki,33-34,46480000,171041,Kiangsi,Nanchang
-Jilin,CN.JL,CN-JL,22,JL,CH05,kr,13,27040000,191038,Kirin,Changchun
-Liaoning,CN.LN,CN-LN,21,LN,CH19,lp,11-12,43590000,147451,Liaoning,Shenyang
-Nei Mongol,CN.NM,CN-NM,15,NM,CH20,im,01-02,27000000,1181104,Inner MongoliHohhot
-Ningxia Hui,CN.NX,CN-NX,64,NX,CH21,nn,75,6310000,52188,Ningsia Hui,Yinchuan
-Qinghai,CN.QH,CN-QH,63,QH,CH06,ts,81,6030000,720459,Tsinghai,Xining
-Shaanxi,CN.SA,CN-SA,61,SA,CH26,ss,71-72,38640000,204846,79091,Shensi,Xian
-Shandong,CN.SD,CN-SD,37,SD,CH25,sp,25-27,100470000,156219,Shantung,Jinan
-Shanghai,CN.SH,CN-SH,31,SH,CH23,sm,20,24240000,6500,Shanghai,Shanghai
-Shanxi,CN.SX,CN-SX,14,SX,CH24,sh,03-04,37180000,149708,Shansi,Taiyuan
-Sichuan,CN.SC,CN-SC,51,SC,CH32,sz,61-64,83410000,491146,Szechwan,Chengdu
-Tianjin,CN.TJ,CN-TJ,12,TJ,CH28,tn,30,15600000,11943,Tientsin,Tianjin
-Xinjiang Uygur,CN.XJ,CN-XJ,65,XJ,CH13,su,83-84,22100000,1743441,Sinkiang Uighur,Urumqi
-Xizang,CN.XZ,CN-XZ,54,XZ,CH14,ti,85,3180000,1178577,Tibet,Lhasa
-Yunnan,CN.YN,CN-YN,53,YN,CH29,yu,65-67,48300000,388610,Yunnan,Kunming
-Zhejiang,CN.ZJ,CN-ZJ,33,ZJ,CH02,ch,31-32,57370000,106078,40957,Chekiang,Hangzhou
+name,fips,iso,population,area,gb,gbn,hasc,,marc,post,conventional,capital,
+Anhui,CH01,CN-AH,70829000,140455,AH,34,CN.AH,,an,23-24,Anhwei,Hefei,
+Beijing,CH22,CN-BJ,21540000,16808,BJ,11,CN.BJ,,pe,10,Peking,Beijing,
+Chongqing,CH33,CN-CQ,30480000,82403,CQ,50,CN.CQ,,cq,40,Chungking,Chongqing,
+Fujian,CH07,CN-FJ,38560000,122919,FJ,35,CN.FJ,,fu,35-36,Fukien,Fuzhou,
+Gansu,CH15,CN-GS,26370000,459233,GS,62,CN.GS,,ka,73-74,Kansu,Lanzhou,
+Guangdong,CH30,CN-GD,113460000,178341,GD,44,CN.GD,,kn,51-52,Kwangtung,Guangzhou,
+Guangxi Zhuang,CH16,CN-GX,48380000,90734,GX,45,CN.GX,,kc,53-54,Kwangsi Chuang,Nanning,
+Guizhou,CH18,CN-GZ,34750000,174976,GZ,52,CN.GZ,,kw,55-56,Kweichow,Guiyang,
+Hainan,CH31,CN-HI,9250000,60438,HI,46,CN.HA,,ha,57,Hainan,Haikou,
+Hebei,CH10,CN-HE,74700000,187240,HE,13,CN.HB,,hp,05-07,Hopeh,Shijiazhuang,
+Heilongjiang,CH08,CN-HL,38310000,431767,HL,23,CN.HL,,he,15-16,Heilungkiang,Harbin,
+Henan,CH09,CN-HA,96050000,166310,HA,41,CN.HE,,ho,45-47,Honan,Zhengzhou,
+Hubei,CH12,CN-HB,59170000,185673,HB,42,CN.HU,,hh,43-44,Hupeh,Wuhan,
+Hunan,CH11,CN-N,68990000,211231,HN,43,CN.HN,,hu,41-42,Hunan,Changsha,
+Jiangsu,CH04,CN-JS,80510000,98285,JS,32,CN.JS,,ku,21-22,Kiangsu,Nanjing,
+Jiangxi,CH03,CN-JX,46480000,171041,JX,36,CN.JX,,ki,33-34,Kiangsi,Nanchang,
+Jilin,CH05,CN-JL,27040000,191038,JL,22,CN.JL,,kr,13,Kirin,Changchun,
+Liaoning,CH19,CN-LN,43590000,147451,LN,21,CN.LN,,lp,11-12,Liaoning,Shenyang,
+Nei Mongol,CH20,CN-NM,27000000,1181104,NM,15,CN.NM,,im,01-02,Inner Mongoli,Hohhot,
+Ningxia Hui,CH21,CN-NX,6310000,52188,NX,64,CN.NX,,nn,75,Ningsia Hui,Yinchuan,
+Qinghai,CH06,CN-QH,6030000,720459,QH,63,CN.QH,,ts,81,Tsinghai,Xining,
+Shaanxi,CH26,CN-SA,38640000,204846,SA,61,CN.SA,,ss,71-72,Shensi,Xian,
+Shandong,CH25,CN-SD,100470000,156219,SD,37,CN.SD,,sp,25-27,Shantung,Jinan,
+Shanghai,CH23,CN-SH,24240000,6500,SH,31,CN.SH,,sm,20,Shanghai,Shanghai,
+Shanxi,CH24,CN-SX,37180000,149708,SX,14,CN.SX,,sh,03-04,Shansi,Taiyuan,
+Sichuan,CH32,CN-SC,83410000,491146,SC,51,CN.SC,,sz,61-64,Szechwan,Chengdu,
+Tianjin,CH28,CN-TJ,15600000,11943,TJ,12,CN.TJ,,tn,30,Tientsin,Tianjin,
+Xinjiang Uygur,CH13,CN-XJ,22100000,1743441,XJ,65,CN.XJ,,su,83-84,Sinkiang Uighur,Urumqi,
+Xizang,CH14,CN-XZ,3180000,1178577,XZ,54,CN.XZ,,ti,85,Tibet,Lhasa,
+Yunnan,CH29,CN-YN,48300000,388610,YN,53,CN.YN,,yu,65-67,Yunnan,Kunming,
+Zhejiang,CH02,CN-ZJ,57370000,106078,ZJ,33,CN.ZJ,,ch,31-32,Chekiang,Hangzhou,
