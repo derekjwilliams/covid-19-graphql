@@ -11,33 +11,47 @@ const globalRecoveredInsertDestination = process.env.GLOBAL_RECOVERED_DESTINATIO
 
 // usPopulationsOrigin is used to get locations with populations
 const globalPopulationsOrigin = process.env.GLOBAL_POPULATIONS_FILENAME || '../additional-data/population.csv' 
+const coutryCodesOrigin = process.env.COUNTRY_CODES_FILENAME || '../additional-data/country-codes.csv' 
 
 const globalDeathsOrigin = process.env.GLOBAL_DEATHS_FILENAME || '../../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv'
 const globalConfirmedOrigin = process.env.GLOBAL_CONFIRMED_FILENAME ||  '../../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv'
 const globalRecoveredOrigin = process.env.GLOBAL_RECOVERED_FILENAME ||  '../../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv'
 
-const locationHeaderToSqlColumns = new Map([
+const inputHeadersToSqlColumns = new Map([
   ['Province_State',  {name: 'province_state', length: 128, type: 'varchar'}],
   ['Country_Region', {name: 'country_region', length: 128, type: 'varchar'}],
   ['Lat', {name: '', type: 'double'}],
   ['Long', {name: '', type: 'double'}]]
   )
 const locationSqlColumns = [
-  'Province_State',
-  'Country_Region',
-  'centroid',
-  'Population'
+  "id",
+  "UID",
+  "iso2",
+  "iso3",
+  "code3",
+  "FIPS",
+  "Admin2",
+  "Province_State",
+  "Country_Region",
+  "centroid",
+  "Combined_Key",
+  "Population",
 ]
 const countSqlColumns = [
-  'id',
-  'location_id',
-  'time',
-  'count'
+  'id','location_id','time','count'
+]
+const populationColumns = [
+  'code3','location','population'
+]
+//code 3 is the equivilant Johns Hopkins UID for global data, but is missing from the Johns Hopkins
+// Data so country name must be matched 
+const countryCodeColumns = [
+  'CountryName','iso2','iso3','code3'
 ]
 
-const keys = Array.from(locationHeaderToSqlColumns.keys())
+const keys = Array.from(inputHeadersToSqlColumns.keys())
 const indexOfLat = keys.indexOf('Lat')
-const indexOfLon = keys.indexOf('Long_')
+const indexOfLon = keys.indexOf('Long')
 
 const usNonDateHeaderString = keys.join(',')
 const regex = /,(?=(?:(?:[^"]*"){2})*[^"]*$)/
@@ -76,18 +90,24 @@ const wrapLocationDataStringParts = (locationData) => {
     Population: '1552058' // when population exists
   }
 */
-const createLocationsMap = (data) => {
+const addCountryCodesToPopulation = (populations, countryCodes) => {
+  console.log(countryCodes);
+  return;
   const result = new Map()
-  const lines = data.split('\n')
-  debugger
-  console.log(lines)
-  // lines.forEach((line, index) => {
-  //   if (index) {
-  //     const locationData = line.split(regex).filter((_,index) => index < usNonDateHeaderString.split(',').length)
-  //     if (locationData.length > 1) {
-  //       const locationDataWrapped = wrapLocationDataStringParts(locationData)
-  //       const lat = locationDataWrapped[indexOfLat]
-  //       const lon = locationDataWrapped[indexOfLon]
+  const populationLines = populationData.split('\n')
+  populationLines.forEach((line, index) => {
+    if (index) {
+      const populationData = line.split(regex)
+      console.log(populationData)
+      //.filter((_,index) => index < usNonDateHeaderString.split(',').length)
+      if (populationData.length > 1) {
+        // console.log(locationData)
+        // const locationDataWrapped = wrapLocationDataStringParts(locationData)
+        // console.log(locationDataWrapped)
+        // const lat = locationDataWrapped[indexOfLat]
+        // const lon = locationDataWrapped[indexOfLon]
+        // console.log(`lat: ${lat}`)
+        // console.log(`lon: ${lon}`)
 
   //       // add centroid point value, replacing LAT and LONG_
   //       locationDataWrapped.splice(indexOfLat, 2, "ST_GeomFromText('POINT(" + lon + " " + lat + ")', 4326)")
@@ -97,10 +117,10 @@ const createLocationsMap = (data) => {
   //       const values = {}
   //       locationSqlColumns.forEach((key,index) => values[key] = locationDataWrapped[index])
   //       result.set(locationDataWrapped[1], values)
-  //     }
-  //   }
-  // })
-  // return result
+      }
+    }
+  })
+  return result
 }
 
 const createLocationInserts = (locationsMap = {}) => {
@@ -142,31 +162,32 @@ const createCountInserts = (locationsMap = {}, data = '', tableName = 'none') =>
 
 const processUSData = async () => 
 {
-  const rawPopulationData = await fsPromises.readFile(globalPopulationsOrigin, 'utf8')
+  const populations = await fsPromises.readFile(globalPopulationsOrigin, 'utf8')
+  const countryCodes = await fsPromises.readFile(coutryCodesOrigin, 'utf8')
   const rawDeathsData = await fsPromises.readFile(globalDeathsOrigin, 'utf8')
   const rawConfirmedData = await fsPromises.readFile(globalConfirmedOrigin, 'utf8')
   const rawRecoveredData = await fsPromises.readFile(globalRecoveredOrigin, 'utf8')
 
-  const locationsMap = createLocationsMap(rawPopulationData)
-  try {
-    const locationInserts = createLocationInserts(locationsMap)
-    await fsPromises.writeFile(usLocationsInsertDestination, locationInserts.join('\n'))
-    console.log('locations row count: ', locationInserts.length)
-  } catch (err) {
-    console.log(err)
-  }
+  const locationsMap = addCountryCodesToPopulation(populations, countryCodes)
+  // try {
+  //   const locationInserts = createLocationInserts(locationsMap)
+  //   await fsPromises.writeFile(globalLocationsInsertDestination, locationInserts.join('\n'))
+  //   console.log('locations row count: ', locationInserts.length)
+  // } catch (err) {
+  //   console.log(err)
+  // }
 
-  const recoveredInserts = createCountInserts(locationsMap, rawRecoveredData, 'recovered_count')
-//  await fsPromises.writeFile(globalRecoveredInsertDestination, deathInserts.join('\n'))
-  console.log('recovered row count: ', recoveredInserts.length)
+  // const recoveredInserts = createCountInserts(locationsMap, rawRecoveredData, 'recovered_count')
+  // await fsPromises.writeFile(globalRecoveredInsertDestination, deathInserts.join('\n'))
+  // console.log('recovered row count: ', recoveredInserts.length)
 
-  const deathInserts = createCountInserts(locationsMap, rawDeathsData, 'death_count')
-  //await fsPromises.writeFile(globalDeathsInsertDestination, deathInserts.join('\n'))
-  console.log('deaths row count: ', deathInserts.length)
+  // const deathInserts = createCountInserts(locationsMap, rawDeathsData, 'death_count')
+  // await fsPromises.writeFile(globalDeathsInsertDestination, deathInserts.join('\n'))
+  // console.log('deaths row count: ', deathInserts.length)
 
-  const confirmedInserts = createCountInserts(locationsMap, rawConfirmedData, 'case_count')
-  //await fsPromises.writeFile(globalConfirmedInsertDestination, confirmedInserts.join('\n'))
-  console.log('confirmed row count: ', confirmedInserts.length)
+  // const confirmedInserts = createCountInserts(locationsMap, rawConfirmedData, 'case_count')
+  // await fsPromises.writeFile(globalConfirmedInsertDestination, confirmedInserts.join('\n'))
+  // console.log('confirmed row count: ', confirmedInserts.length)
 }
 
 processUSData()
