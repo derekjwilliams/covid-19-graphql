@@ -91,10 +91,44 @@ const wrapLocationDataStringParts = (locationData) => {
   }
 */
 const addCountryCodesToPopulation = (populations, countryCodes) => {
-  console.log(countryCodes);
+  // console.log(countryCodes);
+  // return
+  const populationLines = populations.split('\n')
+  const countryCodesLines = countryCodes.split('\n')
+  // const populationsArray = populationLines.map((line) => {
+  //   const data = line.split(regex)
+  //   populationData.code3 = line[0]
+  //   populationData.name = line[1]
+  //   populationData.population = line[2]
+  //   return populationData
+  // })
+  // console.log(JSON.stringify(populationsArray, null, 2))
+  // return
+  const populationMap = new Map()
+  populationLines.forEach((line, index) => {
+    const data = line.split(regex)
+    const v = {}
+    v.name = data[1]
+    v.population = data[2]
+    populationMap.set(data[0], v)
+  })
+  console.log(populationMap);
+
+  const countryCodeData = new Map()
+  countryCodesLines.forEach((line, index) => {
+    const data = line.split(regex)
+    const v = {}
+    console.log(data)
+    v.name = data[0]
+    v.iso2 = data[1]
+    v.iso3 = data[2]
+    countryCodeData.set(data[3], v)
+  })
+  console.log(countryCodeData);
+
   return;
-  const result = new Map()
-  const populationLines = populationData.split('\n')
+  // const result = new Map()
+  // const populationLines = populations.split('\n')
   populationLines.forEach((line, index) => {
     if (index) {
       const populationData = line.split(regex)
@@ -122,6 +156,10 @@ const addCountryCodesToPopulation = (populations, countryCodes) => {
   })
   return result
 }
+
+// const createPopulations = (populations) => {
+
+// }
 
 const createLocationInserts = (locationsMap = {}) => {
   const result = []
