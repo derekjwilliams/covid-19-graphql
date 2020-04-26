@@ -1,1 +1,2 @@
-* linguist-language=JavaScript,TSQL
+*.sql linguist-language=plpgsql
+*.js linguist-languageJavaScript
