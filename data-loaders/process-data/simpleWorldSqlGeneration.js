@@ -10,7 +10,7 @@ const globalConfirmedInsertDestination = process.env.GLOBAL_CONFIRMED_DESTINATIO
 const globalRecoveredInsertDestination = process.env.GLOBAL_RECOVERED_DESTINATION || '../../db/init/63-johnshopkins-global-recovered-data.sql'
 
 // usPopulationsOrigin is used to get locations with populations
-const globalPopulationsOrigin = process.env.GLOBAL_POPULATIONS_FILENAME || '../additional-data/population.csv' 
+const globalPopulationsOrigin = process.env.GLOBAL_POPULATIONS_FILENAME || '../additional-data/populations/population.csv' 
 const coutryCodesOrigin = process.env.COUNTRY_CODES_FILENAME || '../additional-data/country-codes.csv' 
 
 const globalDeathsOrigin = process.env.GLOBAL_DEATHS_FILENAME || '../../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv'
@@ -198,15 +198,108 @@ const createCountInserts = (locationsMap = {}, data = '', tableName = 'none') =>
   return result
 }
 
+const findMismatchedCountryCodes = async () =>  {
+  // const populationFiles = new Map[
+  //   '../additional-data/populations/population.csv',
+  //   '../additional-data/populations/other-locations-population.csv',
+  //   '../additional-data/populations/australia-state-population.csv',
+  //   '../additional-data/populations/china-region-population.csv',
+  //   '../additional-data/populations/canada-province-population.csv'
+  // ]
+  // const countryCodes = await fsPromises.readFile('../additional-data/country-codes', 'utf8')
+  const master = await fsPromises.readFile(globalDeathsOrigin, 'utf8')
+  // console.log(master)
+  let lines = master.split('\n')
+  const csseLocationsWithSub = []
+  const csseLocationsWithoutSub = []
+
+  lines.forEach((line,index) => {
+    if (index < lines.length-1){
+      const values = line.split(regex)
+      const sub = values[0]
+      const value = values[1]
+      const country = value[0] !== '"' ? `'${value}'` : value.replace(/"/g, '\'')
+      // csseLocations = 
+      if (sub.length) {
+        csseLocationsWithSub.push({'sub': sub, 'country': country})
+      } else {
+        csseLocationsWithoutSub.push(country)
+      }
+    }
+  })
+  //console.log(JSON.stringify(csseLocationsWithoutSub,null,2))
+  // console.log(csseLocationsWithSub)
+  // console.log(csseLocationsWithoutSub)
+
+  // load country codes
+  // counst 
+  const countriesFromCodes = []
+  lines = (await fsPromises.readFile('../additional-data/country-codes.csv', 'utf8')).split('\n')
+  
+  lines.forEach((line,index) => {
+    if (index > 0) {
+      const values = line.split(regex)
+      const value = values[0]
+      const country = value[0] !== '"' ? `'${value}'` : value.replace(/"/g, '\'')
+      countriesFromCodes.push(country)
+    }
+  })
+  //console.log(JSON.stringify(countriesFromCodes,null,2))
+
+  // check against csse countries without sub areas, e.g. state province
+  let matches = []
+  let nomatches = []
+  csseLocationsWithoutSub.forEach(csseCountry => {
+    const match = countriesFromCodes.find(cc => {
+      const result = csseCountry === cc
+      return result
+    })
+    if (match) {
+      matches.push(csseCountry)
+    }
+    else {
+      nomatches.push(csseCountry)
+      // console.log(csseCountry, cc)
+    }
+  })
+  console.log(`Johns Hopkins countries with no matches ${JSON.stringify(nomatches,null,2)}`)
+
+  matches = []
+  nomatches = []
+  countriesFromCodes.forEach(c => {
+    const match = csseLocationsWithoutSub.find(cc => {
+      const result = c === cc
+      return result
+    })
+    if (match) {
+      matches.push(c)
+    }
+    else {
+      nomatches.push(c)
+      // console.log(csseCountry, cc)
+    }
+  })
+  // console.log(`country codes with no matches ${JSON.stringify(nomatches,null,2)}`)
+
+  // console.log(lines)
+  
+  // const manyPopulations = await fsPromises.readFile('../additional-data/populations/population.csv')
+  // const populations = await fsPromises.readFile(globalPopulationsOrigin, 'utf8')
+
+}
+
 const processUSData = async () => 
 {
-  const populations = await fsPromises.readFile(globalPopulationsOrigin, 'utf8')
-  const countryCodes = await fsPromises.readFile(coutryCodesOrigin, 'utf8')
-  const rawDeathsData = await fsPromises.readFile(globalDeathsOrigin, 'utf8')
-  const rawConfirmedData = await fsPromises.readFile(globalConfirmedOrigin, 'utf8')
-  const rawRecoveredData = await fsPromises.readFile(globalRecoveredOrigin, 'utf8')
+  findMismatchedCountryCodes()
+  
 
-  const locationsMap = addCountryCodesToPopulation(populations, countryCodes)
+  const populations = await fsPromises.readFile(globalPopulationsOrigin, 'utf8')
+  // const countryCodes = await fsPromises.readFile(coutryCodesOrigin, 'utf8')
+  // const rawDeathsData = await fsPromises.readFile(globalDeathsOrigin, 'utf8')
+  // const rawConfirmedData = await fsPromises.readFile(globalConfirmedOrigin, 'utf8')
+  // const rawRecoveredData = await fsPromises.readFile(globalRecoveredOrigin, 'utf8')
+
+  // const locationsMap = addCountryCodesToPopulation(populations, countryCodes)
   // try {
   //   const locationInserts = createLocationInserts(locationsMap)
   //   await fsPromises.writeFile(globalLocationsInsertDestination, locationInserts.join('\n'))
