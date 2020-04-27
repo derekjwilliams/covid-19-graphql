@@ -209,12 +209,11 @@ const findMismatchedCountryCodes = async () =>  {
   // const countryCodes = await fsPromises.readFile('../additional-data/country-codes', 'utf8')
   const master = await fsPromises.readFile(globalDeathsOrigin, 'utf8')
   // console.log(master)
-  let lines = master.split('\n')
+  const csseLines = master.split('\n')
   const csseLocationsWithSub = []
   const csseLocationsWithoutSub = []
-
-  lines.forEach((line,index) => {
-    if (index < lines.length-1){
+  csseLines.forEach((line,index) => {
+    if (index < csseLines.length-1){
       const values = line.split(regex)
       const sub = values[0]
       const value = values[1]
@@ -234,7 +233,7 @@ const findMismatchedCountryCodes = async () =>  {
   // load country codes
   // counst 
   const countriesFromCodes = []
-  lines = (await fsPromises.readFile('../additional-data/country-codes.csv', 'utf8')).split('\n')
+  const lines = (await fsPromises.readFile('../additional-data/country-codes-orig.csv', 'utf8')).split('\n')
   
   lines.forEach((line,index) => {
     if (index > 0) {
@@ -249,20 +248,29 @@ const findMismatchedCountryCodes = async () =>  {
   // check against csse countries without sub areas, e.g. state province
   let matches = []
   let nomatches = []
+  const csseToStandardNameMap = new Map()
   csseLocationsWithoutSub.forEach(csseCountry => {
-    const match = countriesFromCodes.find(cc => {
+    const match = countriesFromCodes.findIndex(cc => {
       const result = csseCountry === cc
       return result
     })
-    if (match) {
+    if (match === -1)
+    console.log(`${csseCountry}`)
+    if (match > 0) {
+      // console.log(match)
+      // console.log(countriesFromCodes[match])
+      // newCSSELinesMap.set(csseCountry,)
       matches.push(csseCountry)
     }
     else {
       nomatches.push(csseCountry)
+      csseToStandardNameMap.set(csseCountry, countriesFromCodes[match])
       // console.log(csseCountry, cc)
     }
   })
-  console.log(`Johns Hopkins countries with no matches ${JSON.stringify(nomatches,null,2)}`)
+  console.log(JSON.stringify([...csseToStandardNameMap],null,2))
+  // console.log(csseToStandardNameMap)
+  // console.log(`Johns Hopkins countries with no matches ${JSON.stringify(nomatches,null,2)}`)
 
   matches = []
   nomatches = []
@@ -276,15 +284,25 @@ const findMismatchedCountryCodes = async () =>  {
     }
     else {
       nomatches.push(c)
-      // console.log(csseCountry, cc)
     }
   })
-  // console.log(`country codes with no matches ${JSON.stringify(nomatches,null,2)}`)
+  // console.log(nomatches)
 
-  // console.log(lines)
-  
-  // const manyPopulations = await fsPromises.readFile('../additional-data/populations/population.csv')
-  // const populations = await fsPromises.readFile(globalPopulationsOrigin, 'utf8')
+  // create new Johns Hopkins lines
+  csseLines.forEach((line,index) => {
+    if (index < csseLines.length-1){
+      const values = line.split(regex)
+      const sub = values[0]
+      const value = values[1]
+      const country = value[0] !== '"' ? `'${value}'` : value.replace(/"/g, '\'')
+      // csseLocations = 
+      if (sub.length) {
+        csseLocationsWithSub.push({'sub': sub, 'country': country})
+      } else {
+        csseLocationsWithoutSub.push(country)
+      }
+    }
+  })
 
 }
 

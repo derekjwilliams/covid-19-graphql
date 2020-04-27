@@ -284,3 +284,7 @@ Country Centroids are from https://worldmap.harvard.edu/data/geonode:country_cen
 ### Other Data Sources
 
 https://covidtracking.com/data
+
+### Simple Client Example
+
+https://github.com/foundobjx/covid-map
