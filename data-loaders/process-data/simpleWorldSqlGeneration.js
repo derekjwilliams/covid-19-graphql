@@ -241,43 +241,29 @@ const addCountryPopulations = (line, populationsMap) => {
 const processData = async () => 
 {
   const nameMap = new Map(JSON.parse(await fsPromises.readFile('../additional-data/csseCountryToStandardCountry.json', 'utf8')))
-  const locationCodes = (await fsPromises.readFile(countryCodesOrigin, 'utf8'))
-  const centroids = (await fsPromises.readFile('../additional-data/country-centroids.csv', 'utf8'))
-  const populations = (await fsPromises.readFile('../additional-data/populations/population.csv', 'utf8'))
-  const chineseProvincePopulations = (await fsPromises.readFile('../additional-data/populations/china-region-population.csv', 'utf8'))
-  const canadianProvincePopulations = (await fsPromises.readFile('../additional-data/populations/canada-province-population.csv', 'utf8'))
-  const locationCodesMap = createLocationCodeMap(locationCodes)
-  const centroidsMap = createIso3CentroidsMap(centroids)
-  const populationsMap = createPopulationsMap(populations)
-  const chineseProvincePopulationsMap = createChineseProvincePopulationsMap(chineseProvincePopulations)
-  const canadianProvincePopulationsMap = createCanadianProvincePopulationsMap(canadianProvincePopulations)
-  
-  const deathData = (await fsPromises.readFile(globalDeathsOrigin, 'utf8')).split('\n')
-    .map(line => replaceName(line, nameMap))
-    .map(line => addLocationCodes(line, locationCodesMap))
-    .map(line => improveCentroidCoordinates(line, centroidsMap))
-    .map(line => addCountryPopulations(line, populationsMap))
-    .map(line => addChineseProvincePopulations(line, chineseProvincePopulationsMap))
-    .map(line => addCanadianProvincePopulations(line, canadianProvincePopulationsMap))
-  console.log(`global death data locations length ${deathData.length}`)
+  const locationCodesMap = createLocationCodeMap(await fsPromises.readFile(countryCodesOrigin, 'utf8'))
+  const centroidsMap = createIso3CentroidsMap(await fsPromises.readFile('../additional-data/country-centroids.csv', 'utf8'))
+  const populationsMap = createPopulationsMap(await fsPromises.readFile('../additional-data/populations/population.csv', 'utf8'))
+  const chineseProvincePopulationsMap = createChineseProvincePopulationsMap(await fsPromises.readFile('../additional-data/populations/china-region-population.csv', 'utf8'))
+  const canadianProvincePopulationsMap = createCanadianProvincePopulationsMap(await fsPromises.readFile('../additional-data/populations/canada-province-population.csv', 'utf8'))
+  const dataMap = new Map([['death',{'origin': globalDeathsOrigin, 'data': [], 'destination': globalDeathsInsertDestination}],
+                           ['case', {'origin': globalConfirmedOrigin, 'data': [], 'destination' : globalConfirmedInsertDestination}], 
+                           ['recovered', {'origin': globalRecoveredOrigin, 'data': [], 'destination' : globalRecoveredInsertDestination}]])
 
-  const confirmedData = (await fsPromises.readFile(globalConfirmedOrigin, 'utf8')).split('\n')
+  dataMap.forEach(async (v,k) => {
+    const result = (await fsPromises.readFile(v.origin, 'utf8')).split('\n')
     .map(line => replaceName(line, nameMap))
     .map(line => addLocationCodes(line, locationCodesMap))
     .map(line => improveCentroidCoordinates(line, centroidsMap))
     .map(line => addCountryPopulations(line, populationsMap))
     .map(line => addChineseProvincePopulations(line, chineseProvincePopulationsMap))
     .map(line => addCanadianProvincePopulations(line, canadianProvincePopulationsMap))
-  console.log(`global confirmed case data locations length ${confirmedData.length}`)
-
-  const recoveredData = (await fsPromises.readFile(globalRecoveredOrigin, 'utf8')).split('\n')
-    .map(line => replaceName(line, nameMap))
-    .map(line => addLocationCodes(line, locationCodesMap))
-    .map(line => improveCentroidCoordinates(line, centroidsMap))
-    .map(line => addCountryPopulations(line, populationsMap))
-    .map(line => addChineseProvincePopulations(line, chineseProvincePopulationsMap))
-    .map(line => addCanadianProvincePopulations(line, canadianProvincePopulationsMap))
-  console.log(`global recovered case data locations length ${recoveredData.length}`)
+    if (k === 'death') {
+      // add locations from deaths entries (about 266 rows)
+    }
+    console.log(result)
+    console.log(v.destination) // todo write result, converted to sql, to v.destination tables, use key for table name
+  })
 }
 
 processData()
