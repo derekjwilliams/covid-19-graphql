@@ -55,7 +55,7 @@ const indexOfLat = keys.indexOf('Lat')
 const indexOfLon = keys.indexOf('Long')
 
 const replaceName = (line, countryMap) => {
-  if (!line) {
+  if (!!line) {
     const country = line.split(regex)[1]
     if (!!country) {
       const csseCountryKey = (country[0] !== '"' ? `'${country}'` : country.replace(/"/g, '\'')).replace(/^'|'$/g, '')
@@ -68,45 +68,175 @@ const replaceName = (line, countryMap) => {
   }
   return line
 }
-
-const addLocationCode = (line, locationCodes) => {
-  if (!line) {
-    return line
-  }
-  let newLine = line.slice(0)
-  return newLine
-}
-const addCentroidCoordinates = (line, centroids) => {
-  if (!line) {
-    return line
-  }
-  let newLine = line.slice(0)
-  return newLine
+const createLocationCodeMap = (locationCodes) => {
+  const result = new Map()
+  const codeLines = locationCodes.split('\n')
+  codeLines.forEach(line => {
+    const codeValues = line.split(regex)
+    result.set(codeValues[0], new Array(codeValues[1], codeValues[2], codeValues[3]))
+  })
+  return result
 }
 
-const addCountryPopulations = (line, populations) => {
+const addLocationCodes = (line, locationCodesMap) => {
   if (!line) {
     return line
   }
-  let newLine = line.slice(0)
-  return newLine
+  const values = line.split(regex)
+  const country = values[1]
+  const countryCodesKey = (country[0] !== '"' ? `'${country}'` : country.replace(/"/g, '\'')).replace(/^'|'$/g, '')
+  if (!values[0].length && locationCodesMap.has(countryCodesKey)) {
+    const codes = locationCodesMap.get(countryCodesKey)
+    if (codes.length === 3) {
+      values.splice(2, 0, codes[2])
+      values.splice(2, 0, codes[1])
+      values.splice(2, 0, codes[0])
+    } else {
+      values.splice(2, 0, '','','')
+      console.log(`error: ${line}`)
+    }
+  } else {
+    values.splice(2, 0, '','','')
+  }
+  return values.join(',')
 }
 
-const addChineseProvincePopulations = (line, populations) => {
+// uses 3 character iso country code as keys
+const createIso3CentroidsMap = (centroids => {
+  const result = new Map()
+  const dataLines = centroids.split('\n')
+  dataLines.forEach(line => {
+    const codeValues = line.split(regex)
+    const point = codeValues[1]
+    const key = codeValues[12]
+    if (!!point && key.length === 3) {
+      const latlons = point.substring(point.indexOf('(') + 1,point.length-1).split(' ')
+      result.set(codeValues[12], [+latlons[0], +latlons[1]])
+    }
+  })
+  return result
+})
+const improveCentroidCoordinates = (line, centroidsMap) => {
   if (!line) {
     return line
   }
   let newLine = line.slice(0)
-  return newLine
+  const values = newLine.split(regex)
+  if (values[3].length) {
+    const iso3 = values[3]
+    const countryCodesKey = (iso3[0] !== '"' ? `'${iso3}'` : iso3.replace(/"/g, '\'')).replace(/^'|'$/g, '')
+    const coordinates = centroidsMap.get(countryCodesKey)
+    if (!!coordinates) {
+      values[5] = coordinates[1]
+      values[6] = coordinates[0]
+    }
+  }
+  return values.join(',')
+}
+// uses 3 digit numeric code country codes as keys
+const createPopulationsMap = (populations => {
+  const result = new Map()
+  const dataLines = populations.split('\n')
+  dataLines.forEach((line, index) => {
+    if (index) {
+      const values = line.split(regex)
+      const key = values[0]
+      const population = values[2]
+      result.set(key, population)
+    }
+  })
+  return result
+})
+// uses province names as keys, population in 4th column
+const createChineseProvincePopulationsMap = (populations => {
+  const result = new Map()
+  const dataLines = populations.split('\n')
+  dataLines.forEach((line, index) => {
+    if (index) {
+      const values = line.split(regex)
+      result.set(values[0], values[3])
+    }
+  })
+  return result
+})
+
+// uses province names as keys, population in 4th column
+const createCanadianProvincePopulationsMap = (populations => {
+  const result = new Map()
+  const dataLines = populations.split('\n')
+  dataLines.forEach((line, index) => {
+    if (index) {
+      const values = line.split(regex)
+      result.set(values[0], values[3])
+    }
+  })
+  return result
+})
+
+const addChineseProvincePopulations = (line, populationsMap) => {
+  if (!line) {
+    return line
+  }
+  if (line.indexOf('Province/State') !== -1) {
+    return line
+  }
+  const values = line.split(regex)
+  const province = values[0]
+  const country = values[1]
+  if (country === 'China' && province.length) {
+    const provinceKey = (province[0] !== '"' ? `'${province}'` : province.replace(/"/g, '\'')).replace(/^'|'$/g, '')
+    if (values[0].length && populationsMap.has(provinceKey)) {
+      const population = populationsMap.get(provinceKey)
+      values[7] = population
+    }
+  }
+  return values.join(',')
 }
 
-const addCanadianProvincePopulations = (line, populations) => {
+const addCanadianProvincePopulations = (line, populationsMap) => {
   if (!line) {
     return line
   }
-  let newLine = line.slice(0)
-  return newLine
+  if (line.indexOf('Province/State') !== -1) {
+    return line
+  }
+  const values = line.split(regex)
+  const province = values[0]
+  const country = values[1]
+  if (country === 'China' && province.length) {
+    const provinceKey = (province[0] !== '"' ? `'${province}'` : province.replace(/"/g, '\'')).replace(/^'|'$/g, '')
+    if (values[0].length && populationsMap.has(provinceKey)) {
+      const population = populationsMap.get(provinceKey)
+      values[7] = population
+    }
+  }
+  return values.join(',')
 }
+
+const addCountryPopulations = (line, populationsMap) => {
+  if (!line) {
+    return line
+  }
+  if (line.indexOf('Province/State') !== -1) {
+    return line
+  }
+  const values = line.split(regex)
+  const code3 = values[4]
+  const code3Key = (code3[0] !== '"' ? `'${code3}'` : code3.replace(/"/g, '\'')).replace(/^'|'$/g, '')
+  if (!values[0].length && populationsMap.has(code3Key)) {
+    if (Number.isInteger(+code3Key)) {
+      const population = populationsMap.get(code3Key)
+      values.splice(7, 0, population)
+    } else {
+      values.splice(7, 0, '')
+      console.log(`error: ${line}`)
+    }
+  } else {
+    values.splice(7, 0, '')
+  }
+  return values.join(',')
+}
+
 
 const processData = async () => 
 {
@@ -114,36 +244,40 @@ const processData = async () =>
   const locationCodes = (await fsPromises.readFile(countryCodesOrigin, 'utf8'))
   const centroids = (await fsPromises.readFile('../additional-data/country-centroids.csv', 'utf8'))
   const populations = (await fsPromises.readFile('../additional-data/populations/population.csv', 'utf8'))
-  const chineseProvincePopulations = (await fsPromises.readFile('../additional-data/populations/population.csv', 'utf8'))
-  const canadianProvincePopulations = (await fsPromises.readFile('../additional-data/populations/population.csv', 'utf8'))
+  const chineseProvincePopulations = (await fsPromises.readFile('../additional-data/populations/china-region-population.csv', 'utf8'))
+  const canadianProvincePopulations = (await fsPromises.readFile('../additional-data/populations/canada-province-population.csv', 'utf8'))
+  const locationCodesMap = createLocationCodeMap(locationCodes)
+  const centroidsMap = createIso3CentroidsMap(centroids)
+  const populationsMap = createPopulationsMap(populations)
+  const chineseProvincePopulationsMap = createChineseProvincePopulationsMap(chineseProvincePopulations)
+  const canadianProvincePopulationsMap = createCanadianProvincePopulationsMap(canadianProvincePopulations)
   
   const deathData = (await fsPromises.readFile(globalDeathsOrigin, 'utf8')).split('\n')
     .map(line => replaceName(line, nameMap))
-    .map(line => addLocationCode(line, locationCodes))
-    .map(line => addCentroidCoordinates(line, centroids))
-    .map(line => addCountryPopulations(line, populations))
-    .map(line => addChineseProvincePopulations(line, chineseProvincePopulations))
-    .map(line => addCanadianProvincePopulations(line, canadianProvincePopulations))
+    .map(line => addLocationCodes(line, locationCodesMap))
+    .map(line => improveCentroidCoordinates(line, centroidsMap))
+    .map(line => addCountryPopulations(line, populationsMap))
+    .map(line => addChineseProvincePopulations(line, chineseProvincePopulationsMap))
+    .map(line => addCanadianProvincePopulations(line, canadianProvincePopulationsMap))
   console.log(`global death data locations length ${deathData.length}`)
 
   const confirmedData = (await fsPromises.readFile(globalConfirmedOrigin, 'utf8')).split('\n')
     .map(line => replaceName(line, nameMap))
-    .map(line => addLocationCode(line, locationCodes))
-    .map(line => addCentroidCoordinates(line, centroids))
-    .map(line => addCountryPopulations(line, populations))
-    .map(line => addChineseProvincePopulations(line, chineseProvincePopulations))
-    .map(line => addCanadianProvincePopulations(line, canadianProvincePopulations))
+    .map(line => addLocationCodes(line, locationCodesMap))
+    .map(line => improveCentroidCoordinates(line, centroidsMap))
+    .map(line => addCountryPopulations(line, populationsMap))
+    .map(line => addChineseProvincePopulations(line, chineseProvincePopulationsMap))
+    .map(line => addCanadianProvincePopulations(line, canadianProvincePopulationsMap))
   console.log(`global confirmed case data locations length ${confirmedData.length}`)
 
   const recoveredData = (await fsPromises.readFile(globalRecoveredOrigin, 'utf8')).split('\n')
     .map(line => replaceName(line, nameMap))
-    .map(line => addLocationCode(line, locationCodes))
-    .map(line => addCentroidCoordinates(line, centroids))
-    .map(line => addCountryPopulations(line, populations))
-    .map(line => addChineseProvincePopulations(line, chineseProvincePopulations))
-    .map(line => addCanadianProvincePopulations(line, canadianProvincePopulations))
+    .map(line => addLocationCodes(line, locationCodesMap))
+    .map(line => improveCentroidCoordinates(line, centroidsMap))
+    .map(line => addCountryPopulations(line, populationsMap))
+    .map(line => addChineseProvincePopulations(line, chineseProvincePopulationsMap))
+    .map(line => addCanadianProvincePopulations(line, canadianProvincePopulationsMap))
   console.log(`global recovered case data locations length ${recoveredData.length}`)
-
 }
 
 processData()
