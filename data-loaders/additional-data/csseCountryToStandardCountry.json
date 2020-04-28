@@ -12,8 +12,8 @@
     "Brunei Darussalam"
   ],
   [
-    "Central African Republic (the)",
-    null
+    "Central African Republic",
+    "Central African Republic (the)"
   ],
   [
     "Congo (Brazzaville)",
@@ -26,10 +26,6 @@
   [
     "Cote d'Ivoire",
     "Côte d'Ivoire"
-  ],
-  [
-    "Diamond Princess",
-    null
   ],
   [
     "Dominican Republic",
@@ -122,9 +118,5 @@
   [
     "Burma",
     "Myanmar"
-  ],
-  [
-    "MS Zaandam",
-    null
   ]
 ]
