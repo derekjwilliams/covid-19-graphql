@@ -181,13 +181,17 @@ const createCountInserts = (
         if (location !== undefined) {
           const counts = line.split(regex).filter((_, index) => index > last);
           if (counts.length === dates.length) {
-            dates.forEach((date, index) =>
-              result.push(
-                `INSERT INTO johns_hopkins.${tableName}(${countSqlColumns}) VALUES ('${uuid.v4()}',${
-                  location["id"]
-                },'${date}', ${counts[index]});`
-              )
-            );
+            dates.forEach((date, index) => {
+              const countValue = +counts[index]
+              // console.log(bar)
+              if (!isNaN(countValue) && countValue !== 0) {
+                result.push(
+                  `INSERT INTO johns_hopkins.${tableName}(${countSqlColumns}) VALUES ('${uuid.v4()}',${
+                    location["id"]
+                  },'${date}', ${countValue});`
+                )
+              }
+            }) 
           }
         }
       }
@@ -224,9 +228,11 @@ const createCountJSONBInserts = (
           const timeCounts = [];
           const counts = line.split(regex).filter((_, index) => index > last);
           if (counts.length === dates.length) {
-            dates.forEach((date, index) =>
-              timeCounts.push({ time: date, count: +counts[index] })
-            );
+            dates.forEach((date, index) => {
+              if (+counts[index] != 0) {
+                timeCounts.push({ time: date, count: +counts[index] })
+              }
+            })
             result.push(
               `INSERT INTO johns_hopkins.${tableName}(${countJsonbSqlColumns}) VALUES ('${uuid.v4()}',${
                 location["id"]
@@ -259,7 +265,7 @@ const processUSData = async () => {
   await fsPromises.writeFile(usDeathsJSONBInsertDestination, deathJSONBInserts.join('\n'))
   console.log('deaths row jsonb count: ', deathJSONBInserts.length)
 
-  const confirmedJSONBInserts = createCountJSONBInserts(locationsMap, rawDeathsData, 'confirmed_count_jsonb')
+  const confirmedJSONBInserts = createCountJSONBInserts(locationsMap, rawDeathsData, 'case_count_jsonb')
   await fsPromises.writeFile(usConfirmedJSONBInsertDestination, confirmedJSONBInserts.join('\n'))
   console.log('confirmed row jsonb count: ', confirmedJSONBInserts.length)
 
