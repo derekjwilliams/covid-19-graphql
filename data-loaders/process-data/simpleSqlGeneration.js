@@ -177,13 +177,12 @@ const createCountInserts = (
     if (index) {
       const uid = line.split(",")[0];
       if (uid) {
-        const location = locationsMap.get(uid); // uid (johns hopkins unique id) is in the 0th column of the counts csv
+        const location = locationsMap.get(uid); // uid (johns hopkins unique id, which is code3 * 1000 + FIPS) is in the 0th column of the counts csv
         if (location !== undefined) {
           const counts = line.split(regex).filter((_, index) => index > last);
           if (counts.length === dates.length) {
             dates.forEach((date, index) => {
               const countValue = +counts[index]
-              // console.log(bar)
               if (!isNaN(countValue) && countValue !== 0) {
                 result.push(
                   `INSERT INTO johns_hopkins.${tableName}(${countSqlColumns}) VALUES ('${uuid.v4()}',${
