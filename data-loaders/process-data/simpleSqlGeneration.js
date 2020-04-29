@@ -146,7 +146,7 @@ const createLocationsMap = (data) => {
 
 const createLocationInserts = (locationsMap = {}) => {
   const result = [];
-  locationsMap.forEach((value, key) => {
+  locationsMap.forEach((value) => {
     const values = Object.values(value).join(",");
     const insertStatement = `INSERT INTO johns_hopkins.location(${locationSqlColumns}) VALUES (${values});`;
     result.push(insertStatement);

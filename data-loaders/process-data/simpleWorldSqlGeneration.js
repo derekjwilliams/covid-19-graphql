@@ -26,17 +26,13 @@ const inputHeadersToSqlColumns = new Map([
   )
 const locationSqlColumns = [
   "id",
-  "UID",
-  "iso2",
-  "iso3",
-  "code3",
-  "FIPS",
-  "Admin2",
   "Province_State",
   "Country_Region",
-  "centroid",
-  "Combined_Key",
   "Population",
+  "centroid",
+  "iso2",
+  "iso3",
+  "code3"
 ]
 const countSqlColumns = [
   'id','location_id','time','count'
@@ -236,6 +232,55 @@ const addCountryPopulations = (line, populationsMap) => {
   }
   return values.join(',')
 }
+const createLocationsMap = (data) => {
+  const result = new Map();
+  const lines = data.split("\n");
+  lines.forEach((line, index) => {
+    if (index) {
+      const locationData = line
+        .split(regex)
+        .filter((_, index) => index < usNonDateHeaderString.split(",").length);
+      if (locationData.length > 1) {
+        const locationDataWrapped = wrapLocationDataStringParts(locationData);
+        const lat = locationDataWrapped[indexOfLat];
+        const lon = locationDataWrapped[indexOfLon];
+
+        // add centroid point value, replacing LAT and LONG_
+        locationDataWrapped.splice(
+          indexOfLat,
+          2,
+          "ST_GeomFromText('POINT(" + lon + " " + lat + ")', 4326)"
+        );
+
+        // add a UUID V4, which is used for the location id in all of the data inserts
+        locationDataWrapped.unshift(`'${uuid.v4()}'`);
+        const values = {};
+        locationSqlColumns.forEach(
+          (key, index) => (values[key] = locationDataWrapped[index])
+        );
+        // add the Johns Hopkins UID
+        const uid = locationDataWrapped[1];
+        if (uid) {
+          if (Math.round(+uid) - +uid !== 0) {
+            console.log(`bad uid, ${uid}, uid should be an integer`);
+          }
+          result.set(uid, values);
+        }
+      }
+    }
+  });
+  return result;
+};
+
+const createLocationInserts = (locationsMap = {}) => {
+  const result = [];
+  locationsMap.forEach((value) => {
+    const values = Object.values(value).join(",");
+    const insertStatement = `INSERT INTO johns_hopkins.location(${locationSqlColumns}) VALUES (${values});`;
+    result.push(insertStatement);
+  });
+  return result;
+};
 
 
 const processData = async () => 
@@ -249,6 +294,8 @@ const processData = async () =>
   const dataMap = new Map([['death',{'origin': globalDeathsOrigin, 'data': [], 'destination': globalDeathsInsertDestination}],
                            ['case', {'origin': globalConfirmedOrigin, 'data': [], 'destination' : globalConfirmedInsertDestination}], 
                            ['recovered', {'origin': globalRecoveredOrigin, 'data': [], 'destination' : globalRecoveredInsertDestination}]])
+  const locationInserts = []
+
 
   dataMap.forEach(async (v,k) => {
     const result = (await fsPromises.readFile(v.origin, 'utf8')).split('\n')
@@ -258,7 +305,10 @@ const processData = async () =>
     .map(line => addCountryPopulations(line, populationsMap))
     .map(line => addChineseProvincePopulations(line, chineseProvincePopulationsMap))
     .map(line => addCanadianProvincePopulations(line, canadianProvincePopulationsMap))
+
     if (k === 'death') {
+      const locationsMap = createLocationsMap(result)
+      locationInserts = createLocationInserts(locationsMap)
       // add locations from deaths entries (about 266 rows)
     }
     console.log(result)
