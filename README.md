@@ -271,7 +271,7 @@ Johns Hopkins has the population data per county in the `time_series_covid19_dea
 - [x] Data Loader for US Data 
 - [x] Data Loader for US JSONB Data
 - [x] Data Loader for Global Data
-- [ ] Data Loader for Global JSONB Data
+- [x] Data Loader for Global JSONB Data
 - [ ] Automatic Incremental Loading of New Data from GitHub (e.g. WHO, JohnsHopkins, Apple Mobility Services)
 - [ ] Apollo Federation to Provide Unified Service (e.g. WHO, JohnsHopkins, Apple Mobility Services)
 - [ ] TimeScale DB (Timescaledb Postgres 12 Support is in prerelease, use Postgresql 11 in Docker for now)
