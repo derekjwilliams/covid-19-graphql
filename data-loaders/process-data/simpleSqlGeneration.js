@@ -182,15 +182,15 @@ const createCountInserts = (
           const counts = line.split(regex).filter((_, index) => index > last);
           if (counts.length === dates.length) {
             dates.forEach((date, index) => {
-              const countValue = +counts[index]
+              const countValue = +counts[index];
               if (!isNaN(countValue) && countValue !== 0) {
                 result.push(
                   `INSERT INTO johns_hopkins.${tableName}(${countSqlColumns}) VALUES ('${uuid.v4()}',${
                     location["id"]
                   },'${date}', ${countValue});`
-                )
+                );
               }
-            }) 
+            });
           }
         }
       }
@@ -229,9 +229,9 @@ const createCountJSONBInserts = (
           if (counts.length === dates.length) {
             dates.forEach((date, index) => {
               if (+counts[index] != 0) {
-                timeCounts.push({ time: date, count: +counts[index] })
+                timeCounts.push({ time: date, count: +counts[index] });
               }
-            })
+            });
             result.push(
               `INSERT INTO johns_hopkins.${tableName}(${countJsonbSqlColumns}) VALUES ('${uuid.v4()}',${
                 location["id"]
@@ -256,25 +256,56 @@ const processUSData = async () => {
   const rawConfirmedData = await fsPromises.readFile(usConfirmedOrigin, "utf8");
 
   const locationsMap = createLocationsMap(rawPopulationData);
-  const locationInserts = createLocationInserts(locationsMap)
-  await fsPromises.writeFile(usLocationsInsertDestination, locationInserts.join('\n'))
-  console.log('locations row count: ', locationInserts.length)
+  const locationInserts = createLocationInserts(locationsMap);
+  await fsPromises.writeFile(
+    usLocationsInsertDestination,
+    locationInserts.join("\n")
+  );
+  console.log("locations row count: ", locationInserts.length);
 
-  const deathJSONBInserts = createCountJSONBInserts(locationsMap, rawDeathsData, 'death_count_jsonb')
-  await fsPromises.writeFile(usDeathsJSONBInsertDestination, deathJSONBInserts.join('\n'))
-  console.log('deaths row jsonb count: ', deathJSONBInserts.length)
+  const deathJSONBInserts = createCountJSONBInserts(
+    locationsMap,
+    rawDeathsData,
+    "death_count_jsonb"
+  );
+  await fsPromises.writeFile(
+    usDeathsJSONBInsertDestination,
+    deathJSONBInserts.join("\n")
+  );
+  console.log("deaths row jsonb count: ", deathJSONBInserts.length);
 
-  const confirmedJSONBInserts = createCountJSONBInserts(locationsMap, rawDeathsData, 'case_count_jsonb')
-  await fsPromises.writeFile(usConfirmedJSONBInsertDestination, confirmedJSONBInserts.join('\n'))
-  console.log('confirmed row jsonb count: ', confirmedJSONBInserts.length)
+  const confirmedJSONBInserts = createCountJSONBInserts(
+    locationsMap,
+    rawDeathsData,
+    "case_count_jsonb"
+  );
+  await fsPromises.writeFile(
+    usConfirmedJSONBInsertDestination,
+    confirmedJSONBInserts.join("\n")
+  );
+  console.log("confirmed row jsonb count: ", confirmedJSONBInserts.length);
 
-  const deathInserts = createCountInserts(locationsMap, rawDeathsData, 'death_count')
-  await fsPromises.writeFile(usDeathsInsertDestination, deathInserts.join('\n'))
-  console.log('deaths row count: ', deathInserts.length)
+  const deathInserts = createCountInserts(
+    locationsMap,
+    rawDeathsData,
+    "death_count"
+  );
+  await fsPromises.writeFile(
+    usDeathsInsertDestination,
+    deathInserts.join("\n")
+  );
+  console.log("deaths row count: ", deathInserts.length);
 
-  const confirmedInserts = createCountInserts(locationsMap, rawConfirmedData, 'case_count')
-  await fsPromises.writeFile(usConfirmedInsertDestination, confirmedInserts.join('\n'))
-  console.log('confirmed row count: ', confirmedInserts.length)
+  const confirmedInserts = createCountInserts(
+    locationsMap,
+    rawConfirmedData,
+    "case_count"
+  );
+  await fsPromises.writeFile(
+    usConfirmedInsertDestination,
+    confirmedInserts.join("\n")
+  );
+  console.log("confirmed row count: ", confirmedInserts.length);
 };
 
 processUSData();

@@ -8,6 +8,9 @@ const globalLocationsInsertDestination = process.env.GLOBAL_LOCATIONS_DESTINATIO
 const globalDeathsInsertDestination = process.env.GLOBAL_DEATHS_DESTINATION || '../../db/init/61-johnshopkins-global-deaths-data.sql'
 const globalConfirmedInsertDestination = process.env.GLOBAL_CONFIRMED_DESTINATION || '../../db/init/62-johnshopkins-global-confirmed-data.sql'
 const globalRecoveredInsertDestination = process.env.GLOBAL_RECOVERED_DESTINATION || '../../db/init/63-johnshopkins-global-recovered-data.sql'
+const globalDeathsJSONBInsertDestination = process.env.GLOBAL_DEATH_DESTINATION_JSON || "../../db/init/64-johnshopkins-global-death-data-jsonb.sql"
+const globalConfirmedJSONBInsertDestination =process.env.GLOBAL_CONFIRMED_DESTINATION_JSON || "../../db/init/65-johnshopkins-global-confirmed-data-jsonb.sql"
+const globalRecoveredJSONBInsertDestination = process.env.GLOBAL_DEATH_DESTINATION_JSON || "../../db/init/66-johnshopkins-global-recovered-data-jsonb.sql"
 
 // const globalPopulationsOrigin = process.env.GLOBAL_POPULATIONS_FILENAME || '../additional-data/populations/population.csv' 
 const countryCodesOrigin = process.env.COUNTRY_CODES_FILENAME || '../additional-data/country-codes.csv' 
@@ -288,7 +291,6 @@ const createLocationsMap = (lines) => {
         );
         // add a synthetic UID from the State/Provice + the Country
         const uid = locationDataWrapped[1] + '_' + locationDataWrapped[2];
-        // console.log(uid)
         if (uid) {
           result.set(uid, values);
         }
@@ -297,6 +299,50 @@ const createLocationsMap = (lines) => {
   });
   return result;
 };
+
+
+const createCountJSONBInserts = (
+  locationsMap = {},
+  lines = [],
+  tableName = "none"
+) => {
+  const result = [];
+  const header = lines[0];
+  const headers = header.split(regex);
+  const last = headers.indexOf('Long') + 1
+  // create iso dates from input date columns
+  const dates = headers
+    .filter((_, index) => index > last - 1)
+    .map((d) => moment.utc(d, "MM/DD/YY").toISOString());
+  
+  lines.forEach((line, index) => {
+    if (index) {
+      const uid = "'" + line.split(",")[0] + "'_'" + line.split(",")[1] + "'";
+      if (uid && uid !== "''_'undefined'") {
+        const location = locationsMap.get(uid); // mock uid
+
+        if (location !== undefined) {
+          const timeCounts = [];
+          const counts = line.split(regex).filter((_, index) => index > last);
+          if (counts.length === dates.length) {
+            dates.forEach((date, index) => {
+              if (+counts[index] != 0) {
+                timeCounts.push({ time: date, count: +counts[index] })
+              }
+            })
+            result.push(
+              `INSERT INTO johns_hopkins.${tableName}(id, location_id, counts) VALUES ('${uuid.v4()}',${
+                location["id"]
+              },'${JSON.stringify(timeCounts)}');`
+            );
+          }
+        }
+      }
+    }
+  })
+  return result;
+}
+
 
 const createCountInserts = (
   locationsMap = {},
@@ -335,11 +381,8 @@ const createCountInserts = (
       }
     }
   })
-
-
-  // console.log(result)
   return result;
-};
+}
 
 const createLocationInserts = (locationsMap = {}) => {
   const result = [];
@@ -368,9 +411,9 @@ const processData = async () =>
   const populationsMap = createPopulationsMap(await fsPromises.readFile('../additional-data/populations/population.csv', 'utf8'))
   const chineseProvincePopulationsMap = createChineseProvincePopulationsMap(await fsPromises.readFile('../additional-data/populations/china-region-population.csv', 'utf8'))
   const canadianProvincePopulationsMap = createCanadianProvincePopulationsMap(await fsPromises.readFile('../additional-data/populations/canada-province-population.csv', 'utf8'))
-  const dataMap = new Map([['death',{'origin': globalDeathsOrigin, 'data': [], 'destination': globalDeathsInsertDestination}],
-                           ['case', {'origin': globalConfirmedOrigin, 'data': [], 'destination' : globalConfirmedInsertDestination}], 
-                           ['recovered', {'origin': globalRecoveredOrigin, 'data': [], 'destination' : globalRecoveredInsertDestination}]])
+  const dataMap = new Map([['death',{'origin': globalDeathsOrigin, 'data': [], 'destination': globalDeathsInsertDestination, 'jsondestination': globalDeathsJSONBInsertDestination}],
+                           ['case', {'origin': globalConfirmedOrigin, 'data': [], 'destination' : globalConfirmedInsertDestination, 'jsondestination': globalConfirmedJSONBInsertDestination}], 
+                           ['recovered', {'origin': globalRecoveredOrigin, 'data': [], 'destination' : globalRecoveredInsertDestination, 'jsondestination': globalRecoveredJSONBInsertDestination}]])
 
                            
   let locationsMap
@@ -390,11 +433,10 @@ const processData = async () =>
       console.log('Location Inserts: ' + globalLocationsInsertDestination)
       await fsPromises.writeFile(globalLocationsInsertDestination, locationInserts.join('\n'))
     }
-
+    const jsonbInserts = createCountJSONBInserts(locationsMap, result,`${k}_count_jsonb`)
     const inserts = createCountInserts(locationsMap, result, `${k}_count`)
-    // const confirmedInserts = createCountInserts(locationsMap, result, 'case_count')
-    // const recoveredInserts = createCountInserts(locationsMap, result, 'recovered_count')
 
+    await fsPromises.writeFile(v.jsondestination, jsonbInserts.join('\n'))
     await fsPromises.writeFile(v.destination, inserts.join('\n'))
 
     console.log(v.destination) // todo write result, converted to sql, to v.destination tables, use key for table name
