@@ -28,11 +28,11 @@ const locationSqlColumns = [
   "id",
   "Province_State",
   "Country_Region",
-  "Population",
-  "centroid",
   "iso2",
   "iso3",
-  "code3"
+  "code3",
+  "centroid",
+  "Population"
 ]
 const countSqlColumns = [
   'id','location_id','time','count'
@@ -47,8 +47,8 @@ const countryCodeColumns = [
 ]
 
 const keys = Array.from(inputHeadersToSqlColumns.keys())
-const indexOfLat = keys.indexOf('Lat')
-const indexOfLon = keys.indexOf('Long')
+const indexOfLat = 5//keys.indexOf('Lat')
+const indexOfLon = 6//keys.indexOf('Long')
 
 const replaceName = (line, countryMap) => {
   if (!!line) {
@@ -232,19 +232,45 @@ const addCountryPopulations = (line, populationsMap) => {
   }
   return values.join(',')
 }
-const createLocationsMap = (data) => {
+const locationHeaderToSqlColumns = new Map([
+  ["Province_State", { name: "province_state", length: 128, type: "varchar" }],
+  ["Country_Region", { name: "country_region", length: 128, type: "varchar" }],
+  ["iso2", { name: "iso2", length: 2, type: "varchar" }],
+  ["iso3", { name: "iso3", length: 3, type: "varchar" }],
+  ["code3", { name: "iso3", length: 3, type: "int4" }],
+  ["code3", { name: "code3", type: "int4" }],
+  ["Lat", { name: "", type: "double" }],
+  ["Long_", { name: "", type: "double" }],
+  ["Population", { name: "population", type: "int8" }],
+]);
+const wrapLocationDataStringParts = (locationData) => {
+  if (locationData.length > 0) {
+    const outputLocationData = locationData.slice(0);
+
+    let index = 0;
+    locationHeaderToSqlColumns.forEach((metadata, key) => {
+      if (metadata.type === "varchar") {
+        const value = outputLocationData[index].replace("'", "''"); // double single quotes to escape any single quotes in the data
+        outputLocationData[index] =
+          value[0] !== '"' ? `'${value}'` : value.replace(/"/g, "'");
+      }
+      index++;
+    });
+    return outputLocationData;
+  }
+};
+const createLocationsMap = (lines) => {
   const result = new Map();
-  const lines = data.split("\n");
   lines.forEach((line, index) => {
     if (index) {
       const locationData = line
         .split(regex)
-        .filter((_, index) => index < usNonDateHeaderString.split(",").length);
+        .filter((_, index) => index < 8);
       if (locationData.length > 1) {
+        
         const locationDataWrapped = wrapLocationDataStringParts(locationData);
         const lat = locationDataWrapped[indexOfLat];
         const lon = locationDataWrapped[indexOfLon];
-
         // add centroid point value, replacing LAT and LONG_
         locationDataWrapped.splice(
           indexOfLat,
@@ -252,18 +278,18 @@ const createLocationsMap = (data) => {
           "ST_GeomFromText('POINT(" + lon + " " + lat + ")', 4326)"
         );
 
+
         // add a UUID V4, which is used for the location id in all of the data inserts
         locationDataWrapped.unshift(`'${uuid.v4()}'`);
         const values = {};
         locationSqlColumns.forEach(
+          
           (key, index) => (values[key] = locationDataWrapped[index])
         );
-        // add the Johns Hopkins UID
-        const uid = locationDataWrapped[1];
+        // add a synthetic UID from the State/Provice + the Country
+        const uid = locationDataWrapped[1] + '_' + locationDataWrapped[2];
+        // console.log(uid)
         if (uid) {
-          if (Math.round(+uid) - +uid !== 0) {
-            console.log(`bad uid, ${uid}, uid should be an integer`);
-          }
           result.set(uid, values);
         }
       }
@@ -275,7 +301,15 @@ const createLocationsMap = (data) => {
 const createLocationInserts = (locationsMap = {}) => {
   const result = [];
   locationsMap.forEach((value) => {
-    const values = Object.values(value).join(",");
+    const valueArray = Object.values(value)
+    valueArray.forEach((vv, index, arr) => { // replace empty (e.g. code3 numbers) with null
+      if (!vv) {
+        arr[index] = 'null'
+      }
+    })
+    let values = valueArray.join(",");
+    if (values[values.length-1] === ',')
+      values = values + 'null'
     const insertStatement = `INSERT INTO johns_hopkins.location(${locationSqlColumns}) VALUES (${values});`;
     result.push(insertStatement);
   });
@@ -294,8 +328,6 @@ const processData = async () =>
   const dataMap = new Map([['death',{'origin': globalDeathsOrigin, 'data': [], 'destination': globalDeathsInsertDestination}],
                            ['case', {'origin': globalConfirmedOrigin, 'data': [], 'destination' : globalConfirmedInsertDestination}], 
                            ['recovered', {'origin': globalRecoveredOrigin, 'data': [], 'destination' : globalRecoveredInsertDestination}]])
-  const locationInserts = []
-
 
   dataMap.forEach(async (v,k) => {
     const result = (await fsPromises.readFile(v.origin, 'utf8')).split('\n')
@@ -306,12 +338,13 @@ const processData = async () =>
     .map(line => addChineseProvincePopulations(line, chineseProvincePopulationsMap))
     .map(line => addCanadianProvincePopulations(line, canadianProvincePopulationsMap))
 
+    // add locations from deaths entries (about 266 rows)
     if (k === 'death') {
+      console.log('here')
       const locationsMap = createLocationsMap(result)
-      locationInserts = createLocationInserts(locationsMap)
-      // add locations from deaths entries (about 266 rows)
+      const locationInserts = createLocationInserts(locationsMap)
+      fsPromises.writeFile(globalLocationsInsertDestination, locationInserts.join('\n'))
     }
-    console.log(result)
     console.log(v.destination) // todo write result, converted to sql, to v.destination tables, use key for table name
   })
 }
