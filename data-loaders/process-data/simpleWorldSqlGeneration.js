@@ -298,6 +298,49 @@ const createLocationsMap = (lines) => {
   return result;
 };
 
+const createCountInserts = (
+  locationsMap = {},
+  lines = [],
+  tableName = "none"
+) => {
+  const result = [];
+  const header = lines[0];
+  const headers = header.split(regex);
+  const last = headers.indexOf('Long') + 1
+  // create iso dates from input date columns
+  const dates = headers
+    .filter((_, index) => index > last - 1)
+    .map((d) => moment.utc(d, "MM/DD/YY").toISOString());
+  
+  lines.forEach((line, index) => {
+    if (index) {
+      const uid = "'" + line.split(",")[0] + "'_'" + line.split(",")[1] + "'";
+      if (uid && uid !== "''_'undefined'") {
+        const location = locationsMap.get(uid); // mock uid
+        if (location !== undefined) {
+          const counts = line.split(regex).filter((_, index) => index > last);
+          if (counts.length === dates.length) {
+            dates.forEach((date, index) => {
+              const countValue = +counts[index]
+              if (!isNaN(countValue) && countValue !== 0) {
+                result.push(
+                  `INSERT INTO johns_hopkins.${tableName}(${countSqlColumns}) VALUES ('${uuid.v4()}',${
+                    location["id"]
+                  },'${date}', ${countValue});`
+                )
+              }
+            }) 
+          }
+        }
+      }
+    }
+  })
+
+
+  // console.log(result)
+  return result;
+};
+
 const createLocationInserts = (locationsMap = {}) => {
   const result = [];
   locationsMap.forEach((value) => {
@@ -329,6 +372,8 @@ const processData = async () =>
                            ['case', {'origin': globalConfirmedOrigin, 'data': [], 'destination' : globalConfirmedInsertDestination}], 
                            ['recovered', {'origin': globalRecoveredOrigin, 'data': [], 'destination' : globalRecoveredInsertDestination}]])
 
+                           
+  let locationsMap
   dataMap.forEach(async (v,k) => {
     const result = (await fsPromises.readFile(v.origin, 'utf8')).split('\n')
     .map(line => replaceName(line, nameMap))
@@ -340,11 +385,18 @@ const processData = async () =>
 
     // add locations from deaths entries (about 266 rows)
     if (k === 'death') {
-      console.log('here')
-      const locationsMap = createLocationsMap(result)
+      locationsMap = createLocationsMap(result)
       const locationInserts = createLocationInserts(locationsMap)
-      fsPromises.writeFile(globalLocationsInsertDestination, locationInserts.join('\n'))
+      console.log('Location Inserts: ' + globalLocationsInsertDestination)
+      await fsPromises.writeFile(globalLocationsInsertDestination, locationInserts.join('\n'))
     }
+
+    const inserts = createCountInserts(locationsMap, result, `${k}_count`)
+    // const confirmedInserts = createCountInserts(locationsMap, result, 'case_count')
+    // const recoveredInserts = createCountInserts(locationsMap, result, 'recovered_count')
+
+    await fsPromises.writeFile(v.destination, inserts.join('\n'))
+
     console.log(v.destination) // todo write result, converted to sql, to v.destination tables, use key for table name
   })
 }
