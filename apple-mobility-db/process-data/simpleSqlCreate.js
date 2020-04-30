@@ -24,27 +24,42 @@ const addValueInserts = (locationId, data, dates) => {
 }
 
 const getPoint = (location,lookup) => {
-  const entry = lookup.find(_ => _.admin === location)
+  let entry = lookup.find(_ => _.admin === location)
+  if (!!entry) {
+    entry = lookup.find(_ => _.name === location)
+  }
   return (entry !== undefined) ? `ST_GeomFromText('${entry.the_geom}', 4326)` : ''
 }
 
 const getISO2CodeForCountry = (countryName,lookup) => {
-  const entry = lookup.find(_ => _.admin === countryName)
+  let entry = lookup.find(_ => _.admin === countryName)
+  if (!!entry) {
+    entry = lookup.find(_ => _.name === countryName)
+  }
   return (entry !== undefined) ? entry.iso_a2 : ''
 }
 const getISO3CodeForCountry = (countryName,lookup) => {
-  const entry = lookup.find(_ => _.admin === countryName)
+  let entry = lookup.find(_ => _.admin === countryName)
+  if (!!entry) {
+    entry = lookup.find(_ => _.name === countryName)
+  }
   return (entry !== undefined) ? entry.iso_a3 : ''
 }
+const getPopulationForCountry = (countryName,lookup) => {
+  let entry = lookup.find(_ => _.admin === countryName)
+  if (!!entry) {
+    entry = lookup.find(_ => _.name === countryName)
+  }
+  return (entry !== undefined) ? entry.pop_est : -1
+}
 const getNum3CodeForCountry = (countryName, lookup) => {
-  const entry = lookup.find(_ => _.admin === countryName)
+  let entry = lookup.find(_ => _.admin === countryName)
+  if (!!entry) {
+    entry = lookup.find(_ => _.name === countryName)
+  }
   if (entry !== undefined) {
     if (entry.iso_n3 !== undefined) {
-      if (typeof entry.iso_n3 === 'number') {
-        return entry.iso_n3
-      }
-      const result = +(entry.iso_n3.substring(entry.iso_n3.lastIndexOf("0")+1))
-      return result
+      return +entry.iso_n3
     }
   }
   return -1
@@ -68,10 +83,12 @@ const processData = async () => {
       const iso2 = (geoType === 'country/region') ? getISO2CodeForCountry(location, lookup) : null
       const iso3 = (geoType === 'country/region') ? getISO3CodeForCountry(location, lookup) : null
       const code3 = (geoType === 'country/region') ? getNum3CodeForCountry(location, lookup) : null
+      const population = (geoType === 'country/region') ? getPopulationForCountry(location, lookup) : null
 
       const iso2insert = !!iso2 ? `'${iso2}'` : null
       const iso3insert = !!iso3 ? `'${iso3}'` : null
-      const code3insert = !!code3 ? `'${code3}'` : null
+      const code3insert = code3 !== -1 ? code3 : null
+      const populationinsert = population !== -1 ? population : null
       const centroid = getPoint(location, lookup)
       addValueInserts(id, data, dates)
       if (centroid !== '') {
