@@ -30,7 +30,7 @@ https://www.npmjs.com/package/postgraphile-plugin-connection-filter-postgis
 
 ### Case Counts for the first 10 locations in the US on April 7
 
-```
+```graphql
 {
   allLocations(first 10 filter: { iso3: { equalTo: "USA" } }) {
     nodes {
@@ -57,7 +57,7 @@ https://www.npmjs.com/package/postgraphile-plugin-connection-filter-postgis
 
 ### Deaths in Larimer and Multnomah counties between April 9 (inclusive) and April 17 (exclusive)
 
-```
+```graphql
 {
   allLocations(
     filter: {
@@ -94,7 +94,7 @@ https://www.npmjs.com/package/postgraphile-plugin-connection-filter-postgis
 
 ### Order by Population
 
-```
+```graphql
 {
   allLocations(
     first:10
@@ -134,7 +134,7 @@ https://www.npmjs.com/package/postgraphile-plugin-connection-filter-postgis
 
 ### Simple Geospatial Query with Point
 
-```
+```graphql
 {
   allLocations(
     filter: {
@@ -156,7 +156,7 @@ https://www.npmjs.com/package/postgraphile-plugin-connection-filter-postgis
 
 ### Simple Geospatial Within Query (see Postgis [ST_Within](https://postgis.net/docs/ST_Within.html))
 
-```
+```graphql
 {
   allLocations(
     filter: {
@@ -187,6 +187,43 @@ https://www.npmjs.com/package/postgraphile-plugin-connection-filter-postgis
 }
 ```
 
+### Chinese Provinces With Population and Province Centroid
+
+```graphql
+{
+  allLocations(
+    orderBy: PROVINCE_STATE_ASC
+    filter: { countryRegion: { equalTo: "China" } }
+  ) {
+    nodes {
+      provinceState
+      population
+      centroid {
+        geojson
+      }
+      deathCountsByLocationId(orderBy: TIME_DESC) {
+        nodes {
+          time
+          count
+        }
+      }
+      caseCountsByLocationId(orderBy:TIME_DESC) {
+        nodes {
+          time
+          count
+        }       
+      }
+      recoveredCountsByLocationId(orderBy:TIME_DESC) {
+        nodes {
+          time
+          count
+        }
+      }
+    }
+  }
+}
+```
+
 
 
 ## Mobility Data
@@ -204,12 +241,11 @@ See https://github.com/pastelsky/covid-19-mobility-tracker. Todo, create schema 
 ### Johns Hopkins COVID-19 death, cases, and recoveries
 
 
-See `/data-loaders/process-data/simpleSqlGeneration.js`
+See `/data-loaders/process-data/simpleSqlGeneration.js` for US data and `/data-loaders/process-data/simpleWorldSqlGeneration.js` for the rest of the world
 
-This reads the Johns Hopkins time series data and creates sql file to create the `johns_hopkins` schema () and sql files to insert the death and confirmed cases data into the database `51-johns-hopkins-us-deaths-data.sql` and `52-johns-hopkins-us-confirmed-data.sql`.  Example input data is provided in the data-loaders/example-data directory.  To load the latest, one should perform a git clone of the Johns Hopkins github data repository (https://github.com/CSSEGISandData/COVID-19.git) and then run `simpleSqlGeneration.js`.  The location of the input files is specified in `/data-loaders/process-data/.env`, change these to point to the location of the Johns Hopkins time series data.
+These read the Johns Hopkins time series data and creates sql files to create the `johns_hopkins` schema and insert the death, confirmed cases, and recovered data into the database, See `51-johns-hopkins-us-deaths-data.sql` and.  Example input data is provided in the data-loaders/example-data directory.  To load the latest, one should perform a git clone of the Johns Hopkins github data repository (https://github.com/CSSEGISandData/COVID-19.git) and then run `simpleSqlGeneration.js` and `simpleWorldSqlGeneration.js`.  The location of the input and destination sql files is specified in `/data-loaders/process-data/.env`, change the input locations to point to the location of the Johns Hopkins time series data.
 
-### Inserting into database
-
+### Inserting into Database
 
 Create the the johns_hopkins schema, for instance (10.0.1.146 is the host in this example):
 
@@ -217,6 +253,8 @@ Create the the johns_hopkins schema, for instance (10.0.1.146 is the host in thi
 psql postgres -h 10.0.1.146 -d covid -f 00-johnshopkins-schema.sql
 
 ```
+
+then run the subsequent data sql files.  A bash script is inlcuded (`/db/init/load-data.sh`) to run all of the scripts, edit the bash script to accomodate the location of your database and sql files.
 
 ### Running the GraphQL Dockers
 
@@ -276,7 +314,7 @@ Johns Hopkins has the population data per county in the `time_series_covid19_dea
 - [ ] Apollo Federation to Provide Unified Service (e.g. WHO, JohnsHopkins, Apple Mobility Services)
 - [ ] TimeScale DB (Timescaledb Postgres 12 Support is in prerelease, use Postgresql 11 in Docker for now)
 - [x] Apple Mobility Schema
-- [ ] Reference D3 Crossfilter Application
+- [x] Reference D3 Crossfilter Application (see https://github.com/foundobjx/covid-map)
 - [x] Reference React Application
 
 ### References
