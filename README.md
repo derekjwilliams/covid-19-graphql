@@ -232,6 +232,34 @@ https://www.npmjs.com/package/postgraphile-plugin-connection-filter-postgis
 
 See https://www.apple.com/covid19/mobility. The apple-mobility/init folder contains the schema for the apple data
 
+#### Example Query
+
+```graphql
+{
+  allMobilityLocations(
+    filter: {
+      and: [
+        { region: { equalTo: "Portland" } }
+        { transportationType: { equalTo: "transit" } }
+      ]
+    }
+  ) {
+    nodes {
+      region
+      geoType
+      alternativeName
+      transportationType
+      valuesByLocationId(orderBy: TIME_ASC) {
+        nodes {
+          time
+          value
+        }
+      }
+    }
+  }
+}
+```
+
 ### Google
 
 See https://github.com/pastelsky/covid-19-mobility-tracker. Todo, create schema for this data
