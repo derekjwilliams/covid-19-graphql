@@ -15,15 +15,42 @@ const addValueInserts = (locationId, data, dates) => {
   values.splice(0,4)
   const reals = values.map(v => +v)
   if (reals.length > 0 && !isNaN(reals[0])) {
-    const inserts = reals.map((r,i) => 
-    `INSERT INTO apple_mobility.value(id,location_id,time,value) VALUES ('${uuid.v4()}','${locationId}','${dates[i]}',${r});`)
-    inserts.forEach(insert => {
+    reals.map((r,i) => 
+    `INSERT INTO apple_mobility.value(id,location_id,time,value) VALUES ('${uuid.v4()}','${locationId}','${moment.utc(dates[i], "YYYY-MM-DD").toISOString()}',${r});`)
+    .forEach(insert => {
       valueInserts.push(insert)
     })
   }
 }
 
+const getPoint = (location,lookup) => {
+  const entry = lookup.find(_ => _.admin === location)
+  return (entry !== undefined) ? `ST_GeomFromText('${entry.the_geom}', 4326)` : ''
+}
+
+const getISO2CodeForCountry = (countryName,lookup) => {
+  const entry = lookup.find(_ => _.admin === countryName)
+  return (entry !== undefined) ? entry.iso_a2 : ''
+}
+const getISO3CodeForCountry = (countryName,lookup) => {
+  const entry = lookup.find(_ => _.admin === countryName)
+  return (entry !== undefined) ? entry.iso_a3 : ''
+}
+const getNum3CodeForCountry = (countryName, lookup) => {
+  const entry = lookup.find(_ => _.admin === countryName)
+  if (entry !== undefined) {
+    if (entry.iso_n3 !== undefined) {
+      if (typeof entry.iso_n3 === 'number') {
+        return entry.iso_n3
+      }
+      const result = +(entry.iso_n3.substring(entry.iso_n3.lastIndexOf("0")+1))
+      return result
+    }
+  }
+  return -1
+}
 const processData = async () => {
+  const lookup = JSON.parse(await fsPromises.readFile('./lookup.json', 'utf8'))
   const locationData = await fsPromises.readFile(origin,"utf8")
   const lines = locationData.split('\n')
   const dates = lines[0].split(regex)
@@ -38,13 +65,26 @@ const processData = async () => {
       const geoType = data[0]
       const transportationType = data[2]
       const id = uuid.v4()
+      const iso2 = (geoType === 'country/region') ? getISO2CodeForCountry(location, lookup) : null
+      const iso3 = (geoType === 'country/region') ? getISO3CodeForCountry(location, lookup) : null
+      const code3 = (geoType === 'country/region') ? getNum3CodeForCountry(location, lookup) : null
+
+      const iso2insert = !!iso2 ? `'${iso2}'` : null
+      const iso3insert = !!iso3 ? `'${iso3}'` : null
+      const code3insert = !!code3 ? `'${code3}'` : null
+      const centroid = getPoint(location, lookup)
       addValueInserts(id, data, dates)
-      return `INSERT INTO apple_mobility.mobility_location(id,geo_type,region,transportation_type,alternative_name) VALUES ('${id}','${geoType}','${location}','${transportationType}','${alternativeName}');`
+      if (centroid !== '') {
+        return `INSERT INTO apple_mobility.mobility_location(id,geo_type,region,transportation_type,alternative_name,iso2,iso3,code3,centroid) VALUES ('${id}','${geoType}','${location}','${transportationType}','${alternativeName}',${iso2insert},${iso3insert},${code3insert},${centroid});`
+      } else {
+        return `INSERT INTO apple_mobility.mobility_location(id,geo_type,region,transportation_type,alternative_name,iso2,iso3,code3) VALUES ('${id}','${geoType}','${location}','${transportationType}','${alternativeName}',${iso2insert},${iso3insert},${code3insert});`
+      }
     }
     return ''
   }).filter(insertStatement => insertStatement !== '')
   await fsPromises.writeFile(locationsInsertDestination,locationInserts.join('\n'))
   await fsPromises.writeFile(valuesInsertDestination, valueInserts.join('\n'))
+  console.log(`location count: ${locationInserts.length}`)
+  console.log(`values count: ${valueInserts.length}`)
 }
-
 processData()
