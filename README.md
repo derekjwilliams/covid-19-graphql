@@ -342,6 +342,7 @@ Johns Hopkins has the population data per county in the `time_series_covid19_dea
 - [ ] Apollo Federation to Provide Unified Service (e.g. WHO, JohnsHopkins, Apple Mobility Services)
 - [ ] TimeScale DB (Timescaledb Postgres 12 Support is in prerelease, use Postgresql 11 in Docker for now)
 - [x] Apple Mobility Schema
+- [x] ISO country codes, and country centroids in Apple Mobility Data
 - [x] Reference D3 Crossfilter Application (see https://github.com/foundobjx/covid-map)
 - [x] Reference React Application
 
