@@ -39,7 +39,7 @@ const processData = async () => {
       const transportationType = data[2]
       const id = uuid.v4()
       addValueInserts(id, data, dates)
-      return `INSERT INTO apple_mobility.location(id,geo_type,region,transportation_type,alternative_name) VALUES ('${id}','${geoType}','${location}','${transportationType}','${alternativeName}');`
+      return `INSERT INTO apple_mobility.mobility_location(id,geo_type,region,transportation_type,alternative_name) VALUES ('${id}','${geoType}','${location}','${transportationType}','${alternativeName}');`
     }
     return ''
   }).filter(insertStatement => insertStatement !== '')

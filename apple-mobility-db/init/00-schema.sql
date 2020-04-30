@@ -3,7 +3,7 @@ CREATE SCHEMA apple_mobility;
 CREATE EXTENSION IF NOT EXISTS postgis schema public;
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp" schema public;
 
-CREATE TABLE apple_mobility.location (
+CREATE TABLE apple_mobility.mobility_location (
     id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
     geo_type varchar(64),
     region varchar(64),
@@ -22,4 +22,4 @@ CREATE TABLE apple_mobility.value (
 
 ALTER TABLE apple_mobility.value ADD CONSTRAINT value_pkey PRIMARY KEY (id);
 
-ALTER TABLE apple_mobility.value ADD CONSTRAINT value_location_id_fkey FOREIGN KEY (location_id) REFERENCES apple_mobility.location(id) ON UPDATE CASCADE;
+ALTER TABLE apple_mobility.value ADD CONSTRAINT value_location_id_fkey FOREIGN KEY (location_id) REFERENCES apple_mobility.mobility_location(id) ON UPDATE CASCADE;
