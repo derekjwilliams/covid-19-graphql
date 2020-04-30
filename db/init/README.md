@@ -15,3 +15,10 @@ Delete any existing johns_hopkins schema prior to running, i.e.: `delete schema 
 There are two backups, one plain and one custom/compressed
 
 These are `backup.sql` and `backup.dmp` respectively
+
+These are created with the following commands
+
+
+`pg_dump --verbose --host=localhost --port=5432 --username=myusername --format=p --no-privileges --no-owner -n "johns_hopkins" covid`
+
+`pg_dump --verbose --host=localhost --port=5432 --username=myusername --format=c --compress=9 --no-privileges --no-owner -n "johns_hopkins" covid`
