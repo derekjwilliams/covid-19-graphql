@@ -358,7 +358,7 @@ https://covidtracking.com/data
 
 https://github.com/foundobjx/covid-map
 
-### Timescale Installation Issues
+### Timescale Installation Issues (on Postgres 12.2 with OSX)
 
 Timescale is still fairly new to postgres 12.  If building from source make sure set and pass the appropriate environment variables.  In addition  pg_isolation_regress.sh is not installed by default with postgres, so disable.
 
@@ -370,7 +370,7 @@ export PG_PATH=OPENSSL_ROOT_DIR=/usr/local/opt/openssl
 ./bootstrap -DPG_CONFIG=/usr/local/bin/pg_config -DREGRESS_CHECKS=OFF
 ```
 
-Check the locatoin of Postgres and openssl on the system and modify the above appropriately.
+Check the location of Postgres and openssl on the system and modify the above appropriately.
 
 Refs: 
 https://github.com/timescale/timescaledb/blob/master/docs/BuildSource.md
