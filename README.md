@@ -1,7 +1,7 @@
 # covid-19-graphql
 Simple postgraphile based graphql API based on the data from Johns Hopkins, see https://github.com/CSSEGISandData/COVID-19.git
 
-Mobility data services based on the mobility data from Apple and Google are also provided.  
+Mobility data services based on the mobility data from Apple is also provided, and Google and Fitbit data soon.
 
 A simple federation service (Apollo Federation) is provided to connect these three services together, allowing the client to query for both Johns Hopkins case counts and mobility information for a set of locations in one graphql query.
 
@@ -357,3 +357,21 @@ https://covidtracking.com/data
 ### Simple Client Example
 
 https://github.com/foundobjx/covid-map
+
+### Timescale Installation Issues
+
+Timescale is still fairly new to postgres 12.  If building from source make sure set and pass the appropriate environment variables.  In addition  pg_isolation_regress.sh is not installed by default with postgres, so disable.
+
+Typical command lines
+
+```
+export PG_PATH=/usr/local/bin
+export PG_PATH=OPENSSL_ROOT_DIR=/usr/local/opt/openssl
+./bootstrap -DPG_CONFIG=/usr/local/bin/pg_config -DREGRESS_CHECKS=OFF
+```
+
+Check the locatoin of Postgres and openssl on the system and modify the above appropriately.
+
+Refs: 
+https://github.com/timescale/timescaledb/blob/master/docs/BuildSource.md
+https://github.com/timescale/timescaledb/issues/1655
