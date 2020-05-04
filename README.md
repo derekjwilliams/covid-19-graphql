@@ -262,7 +262,37 @@ See https://www.apple.com/covid19/mobility. The apple-mobility/init folder conta
 
 ### Google
 
-See https://github.com/pastelsky/covid-19-mobility-tracker. Todo, create schema for this data
+#### Example Query
+
+```graphql
+{
+  allMobilityChangeLocations(filter: { countryRegion: { equalTo: "France" } }) {
+    nodes {
+      countryRegion
+      subRegion1
+      subRegion2
+      countryRegionCode
+      mobilityChangesByLocationId(
+        filter: { time: { greaterThanOrEqualTo: "2020-03-15" } }
+        first: 100
+        orderBy: TIME_ASC
+      ) {
+        nodes {
+          time
+          residential
+          parks
+          workplaces
+          retailAndRecreation
+          groceryAndPharmacy
+          transitStations
+        }
+      }
+    }
+  }
+}
+```
+
+
 
 ## Data Loader Code
 
@@ -342,7 +372,11 @@ Johns Hopkins has the population data per county in the `time_series_covid19_dea
 - [ ] Apollo Federation to Provide Unified Service (e.g. WHO, JohnsHopkins, Apple Mobility Services)
 - [ ] TimeScale DB (Timescaledb Postgres 12 Support is in prerelease, use Postgresql 11 in Docker for now)
 - [x] Apple Mobility Schema
+- [x] Apple Mobility Data Loaders
 - [x] ISO country codes, and country centroids in Apple Mobility Data
+- [x] Google Mobility Schema
+- [x] Apple Mobility Data Loaders
+- [] Country centroids in Google Mobility Data
 - [x] Reference D3 Crossfilter Application (see https://github.com/foundobjx/covid-map)
 - [x] Reference React Application
 
