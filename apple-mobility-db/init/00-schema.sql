@@ -1,3 +1,4 @@
+\connect covid
 CREATE SCHEMA apple_mobility;
 
 CREATE EXTENSION IF NOT EXISTS postgis schema public;

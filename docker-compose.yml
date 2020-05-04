@@ -20,7 +20,7 @@ services:
                 "--port",
                 "5000",
                 "--schema",
-                "johns_hopkins,apple_mobility",
+                "johns_hopkins,apple_mobility,google_mobility",
                 "--enhance-graphiql",
                 "--allow-explain",
                 "--dynamic-json",

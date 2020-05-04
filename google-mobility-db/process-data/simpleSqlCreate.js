@@ -36,7 +36,7 @@ const getValue = (value, header, metadata) => {
         result = '\'\''
       }
       else if (value.length <= metadata.get(header).length) {
-        result = `\'${value}\'`
+        result = `\'${value.replace("'", "''").replace(/^"|"$/g, '')}\'`
       }
       else {
         console.log(`${header} value too long: ${value} length greater than ${metadata.get(header).length}`)
@@ -76,11 +76,11 @@ const writeSqlLocationInserts = async () => {
           const locationId = uuid.v4()
           uniqueLocationsMap.set(candidateUniqueLocation, locationId)
           Array.from(locationMetadata.keys()).forEach((header, index) => valueMap.set(header, getValue(values[index], header, locationMetadata)))
-          locationInsertStream.write(`INSERT INTO google_mobility.google_mobility_location (id, ${Array.from(valueMap.keys())}) VALUES ('${locationId}', ${Array.from(valueMap.values())});\n`)
+          locationInsertStream.write(`INSERT INTO google_mobility.mobility_change_location (id, ${Array.from(valueMap.keys())}) VALUES ('${locationId}', ${Array.from(valueMap.values())});\n`)
         }
         const data = values.slice(locationMetadata.size + 1)
         if (data.length === valuesMetadata.size) {
-          valueInsertStream.write(`INSERT INTO google_mobility.change(id, location_id, time, ${dataColumns}) VALUES ('${uuid.v4()}','${uniqueLocationsMap.get(candidateUniqueLocation)}', '${values[locationMetadata.size]}', ${ data.map(_ => _/100).join(',')});\n`);
+          valueInsertStream.write(`INSERT INTO google_mobility.mobility_change(id, location_id, time, ${dataColumns}) VALUES ('${uuid.v4()}','${uniqueLocationsMap.get(candidateUniqueLocation)}', '${values[locationMetadata.size]}', ${ data.map(_ => _/100).join(',')});\n`);
         }
       }
     }
