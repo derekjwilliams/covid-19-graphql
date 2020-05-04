@@ -1,0 +1,23 @@
+{
+  "name": "process-data",
+  "version": "1.0.0",
+  "description": "",
+  "main": "simpleSqlCreate.js",
+  "scripts": {
+    "start": "nodemon simpleSqlCreate.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "fs": "0.0.1-security",
+    "moment": "^2.24.0",
+    "node-fetch": "^2.6.0",
+    "uuid": "^7.0.3"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.2"
+  },
+  "type": "module"
+}
