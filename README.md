@@ -1,5 +1,5 @@
 # covid-19-graphql
-Simple postgraphile based graphql API based on the data from Johns Hopkins, see https://github.com/CSSEGISandData/COVID-19.git
+Simple Postgraphile based graphQL API based on the data from Johns Hopkins, see https://github.com/CSSEGISandData/COVID-19.git
 
 Mobility data services based on the mobility data from Apple is also provided, and Google and Fitbit data soon.
 
