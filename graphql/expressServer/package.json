@@ -1,0 +1,16 @@
+{
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@graphile-contrib/pg-many-to-many": "^1.0.0-beta.13",
+    "@graphile/federation": "0.0.3",
+    "dotenv": "^8.0.0",
+    "express": "^4.17.1",
+    "graphql-voyager": "^1.0.0-rc.29",
+    "pg": "7.18.2",
+    "pg-sql2": "^4.5.0",
+    "postgraphile": "^4.5.5",
+    "postgraphile-plugin-connection-filter": "^1.1.3"
+  }
+}
