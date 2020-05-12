@@ -22,8 +22,6 @@ const knex = k({
   searchPath: ['johns_hopkins', 'public'],
   debug: true
 })
-INPROGRESS
-
 
 const replaceName = (line, countryMap) => {
   if (!!line) {
