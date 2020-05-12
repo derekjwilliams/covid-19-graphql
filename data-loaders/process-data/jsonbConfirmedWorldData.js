@@ -64,14 +64,12 @@ const getNewDataMap = async (filename, countryMap, after) => {
   const dataHeader = new LineByLine(incrementOrigin).next().toString('ascii').split(',')
   const provinceStateIndex = dataHeader.findIndex(value => value === 'Province/State')
   const countryRegionIndex = dataHeader.findIndex(value => value === 'Country/Region')
-  const dataLength = dataHeader.length
   const firstDateIndex = findFirstDateIndex(dataHeader)
-  const lastDate = moment.utc(dataHeader[dataLength-1], "MM/DD/YY").toISOString()
   const newLines = (await fsPromises.readFile(filename,'utf8')
       .then(_ =>  _.split('\n')))
       .map(line => replaceName(line, countryMap))
   const startIndex= firstDateIndex + 1
-  const dates = newLines[0].split(valueSplitRegex).splice(startIndex).map(_ => _)
+  const dates = newLines[0].split(valueSplitRegex).splice(startIndex)
   for (const [i, newLine] of newLines.entries()) {
     if (i > 0 && !!newLine.length) {
       const values = newLine.split(valueSplitRegex)
