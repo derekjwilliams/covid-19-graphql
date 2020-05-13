@@ -75,6 +75,7 @@ const getNewDataMap = async (filename, countryMap, after) => {
       const countryRegion = values[countryRegionIndex][0] ==='"' ? values[countryRegionIndex].slice(1,-1): values[countryRegionIndex]
       const provinceState = values[provinceStateIndex][0] ==='"' ? values[provinceStateIndex].slice(1,-1): values[provinceStateIndex]
       const resultValue = counts.map((count, countIndex) => ({time: dates[countIndex], count: count}))
+      console.log(countryRegion + '-' + provinceState)
       result.set(countryRegion + '-' + provinceState, resultValue)
     }
   }
