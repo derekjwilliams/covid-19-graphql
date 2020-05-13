@@ -88,7 +88,6 @@ const getMaxTime = (row) =>
   , moment(0).utc())
 
 ;(async () => {
-  console.log('here')
   try {
     const nameMap = new Map(JSON.parse(await fsPromises.readFile('../additional-data/csseCountryToStandardCountry.json', 'utf8')))
     const jsonValues = await selectJsonValues()
