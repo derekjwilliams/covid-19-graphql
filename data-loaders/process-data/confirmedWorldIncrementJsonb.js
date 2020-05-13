@@ -57,7 +57,6 @@ const findFirstDateIndex = (values) =>
     return dateCandidate.isValid()
   })
 
-
 // return a map with the Combined Key (Country/Region and Province/State for the world) value as the key and and array of time:count pairs
 const getNewDataMap = async (filename, countryMap, after) => {
   const result = new Map()
@@ -100,7 +99,7 @@ const getMaxTime = (row) =>
       const combinedKey = location.country_region + '-' + location.province_state
       if (newData.has(combinedKey)) {
         const insertValue = newData.get(combinedKey).map(entry => ({"time": moment.utc(entry.time, "MM/DD/YY").toISOString(), "count": entry.count }))
-        await updateRow (`${tablePrefix}_count_jsonb`, location.id, JSON.stringify(insertValue))
+        //await updateRow (`${tablePrefix}_count_jsonb`, location.id, JSON.stringify(insertValue))
       } else {
         console.log('not found: ' + combinedKey)
       }
