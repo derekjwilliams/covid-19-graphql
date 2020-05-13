@@ -14,7 +14,6 @@ const valueSplitRegex = /,(?=(?:(?:[^"]*"){2})*[^"]*$)/;
 const dbCredentials = process.env.DB_CREDENTIALS || 'postgres:postgres'
 const host = process.env.DB_HOST || 'localhost:5432'
 const dbConnection = `postgres://${dbCredentials}@${host}/covid`
-console.log(dbCredentials)
 const knex = k({
   client: 'pg',
   connection: dbConnection,
