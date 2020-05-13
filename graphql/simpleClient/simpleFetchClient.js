@@ -16,8 +16,8 @@ const g = gql`{
 `
 
 const query = `{"query":${JSON.stringify(g.loc.source.body)}}`
+console.log(query)
 d3.json("http://localhost:5000/graphql", {
-  credentials: "include",
   headers: {
     accept: "application/json",
     "accept-language": "en-US,en;q=0.9,fr;q=0.8",
