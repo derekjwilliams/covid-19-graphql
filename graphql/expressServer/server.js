@@ -23,6 +23,7 @@ app.use(
       watchPg: true,
       graphiql: true,
       enhanceGraphiql: true,
+      dynamicJson: true,
       enableCors: true,
       allowExplain(req) {
         return true
@@ -31,7 +32,7 @@ app.use(
   )
 )
 
-app.listen(process.env.PORT || 5001)
-console.log(`🚀 Server ready at http://localhost:5001/graphql`)
-console.log(`🚀 Graphiql UI ready at http://localhost:5001/graphiql`)
+app.listen(process.env.PORT || 5000)
+console.log(`🚀 Server ready at http://localhost:5000/graphql`)
+console.log(`🚀 Graphiql UI ready at http://localhost:5000/graphiql`)
 
