@@ -8,7 +8,7 @@ const { default: FederationPlugin } = require("@graphile/federation")
 const app = express()
 
 const pgPool = new pg.Pool({
-  connectionString: (process.env.DATABASE_URL || 'postgres://postgres:postgres@10.0.1.146:5432/covid'),
+  connectionString: (process.env.DATABASE_URL || 'postgres://postgres:rlwCiQeLqqDqUQpYM7fy@localhost:5433/covid'),
 })
 
 app.use(
@@ -35,4 +35,3 @@ app.use(
 app.listen(process.env.PORT || 5000)
 console.log(`🚀 Server ready at http://localhost:5000/graphql`)
 console.log(`🚀 Graphiql UI ready at http://localhost:5000/graphiql`)
-
