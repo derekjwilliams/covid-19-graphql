@@ -9,6 +9,8 @@ const locationsInsertDestination = '../init/01-locations.sql';
 const valuesInsertDestination = '../init/02-values.sql';
 const regex = /,(?=(?:(?:[^"]*"){2})*[^"]*$)/;
 
+const afterDate = '04-26-2020'
+dateColumn = 4
 const locationMetadata = new Map([
   ['country_region_code', { type: 'varchar', length: 2 }],
   ['country_region', { type: 'varchar', length: 128 }],
@@ -24,8 +26,6 @@ const valuesMetadata = new Map([
   ['workplaces_percent_change_from_baseline', { kind: 'workplaces', type: 'number' }],
   ['residential_percent_change_from_baseline', { kind: 'residential', type: 'number' }]
 ])
-
-const combinedMetadata = new Map([...locationMetadata, ['date', { type: 'date' }], ...valuesMetadata])
 
 const getValue = (value, header, metadata) => {
   let result

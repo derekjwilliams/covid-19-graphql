@@ -16,11 +16,16 @@ const incrementOrigin =
   '../../../PARENT-COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv'
 
 const regex = /,(?=(?:(?:[^"]*"){2})*[^"]*$)/;
+
+const dbCredentials = process.env.DB_CREDENTIALS || 'postgres:postgres'
+const host = process.env.DB_HOST || 'localhost:5432'
+const dbConnection = `postgres://${dbCredentials}@${host}/covid`
+
 const knex = k({
   client: 'pg',
-  connection: 'postgres://postgres:postgres@localhost:5432/covid',
+  connection: dbConnection,
   searchPath: ['johns_hopkins', 'public'],
-  debug: true
+  debug: false
 })
 
 const replaceName = (line, countryMap) => {
@@ -103,7 +108,9 @@ const processData = async () => {
       const newDataRow = newData.get(combinedKey)
       for (const newData of newDataRow) {
         const timestamp = moment.utc(newData.date, "MM/DD/YY").toISOString();
-        //await insertRow ('case_count', {id:`${uuid.v4()}`,location_id: `${location.id}`,time: timestamp, count: newData.count})
+        console.log(`time: ${timestamp}, count: ${newData.count}`)
+        // comment out next line to prevent accidental insertion while code is in development
+        // await insertRow ('case_count', {id:`${uuid.v4()}`,location_id: `${location.id}`,time: timestamp, count: newData.count})
       }
     } else {
       console.log('not found: ' + combinedKey)

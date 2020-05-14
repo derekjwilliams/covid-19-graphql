@@ -129,7 +129,7 @@ const processData = async (place, kind) => {
       console.log(combinedKey)
       if (newData.has(combinedKey)) {
         const insertValue = newData.get(combinedKey).map(entry => ({"time": moment.utc(entry.time, "MM/DD/YY").toISOString(), "count": entry.count }))
-        await updateRow(`${tablePrefix}_count_jsonb`, location.id, JSON.stringify(insertValue))
+        //await updateRow(`${tablePrefix}_count_jsonb`, location.id, JSON.stringify(insertValue))
         console.log(`Inserted ${insertValue.length} values, starting at ${insertValue[0].time}, ending at ${insertValue[insertValue.length - 1].time}`)
       } else {
         console.log('not found: ' + combinedKey)
