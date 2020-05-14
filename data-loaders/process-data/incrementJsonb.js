@@ -2,7 +2,7 @@ import { promises as fsPromises } from 'fs'
 import moment from 'moment'
 import dotenv from 'dotenv'
 dotenv.config()
-import k from 'knex'; 
+import k from 'knex';
 import LineByLine from 'n-readlines'
 
 const valueSplitRegex = /,(?=(?:(?:[^"]*"){2})*[^"]*$)/;
@@ -16,7 +16,7 @@ const knex = k({
   client: 'pg',
   connection: dbConnection,
   searchPath: ['johns_hopkins', 'public'],
-  debug: false
+  debug: true
 })
 
 const replaceName = (line, countryMap) => {
@@ -34,10 +34,10 @@ const replaceName = (line, countryMap) => {
   return line
 }
 
-const updateRow = async (table, locationId, values) => 
-  await knex(table).where({location_id: locationId}).update({counts: values}).then(data => data)
+const updateRow = async (table, locationId, values) =>
+  await knex(table).insert({location_id: locationId, counts: values}).then(data => data)
 
-const selectJsonValues = async (tablePrefix) => 
+const selectJsonValues = async (tablePrefix) =>
   await knex.raw(`SELECT ${tablePrefix}_count_jsonb.counts FROM ${tablePrefix}_count_jsonb, location WHERE location.id = ${tablePrefix}_count_jsonb.location_id and location.country_region = 'US' limit 100`)
      .then(data => data)
 
@@ -53,7 +53,7 @@ const selectLocData = async (place) => {
   }
 }
 
-const findFirstDateIndex = (values) => 
+const findFirstDateIndex = (values) =>
   values.findIndex(value => {
     const dateCandidate = moment(value, 'M/DD/YY', true)
     return dateCandidate.isValid()
@@ -104,8 +104,8 @@ const getNewDataMap = async (countryMap, place, filename) => {
   return result
 }
 
-const getMaxTime = (row) => 
-  row.counts.reduce((a, entry) => 
+const getMaxTime = (row) =>
+  row.counts.reduce((a, entry) =>
     moment(entry.time).utc().isAfter(a) ? moment(entry.time).utc() : a
   , moment(0).utc())
 
