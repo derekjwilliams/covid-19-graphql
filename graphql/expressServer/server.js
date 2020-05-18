@@ -8,7 +8,7 @@ const { default: FederationPlugin } = require("@graphile/federation")
 const app = express()
 
 const pgPool = new pg.Pool({
-  connectionString: (process.env.DATABASE_URL || 'postgres://postgres:rlwCiQeLqqDqUQpYM7fy@localhost:5433/covid'),
+  connectionString: (process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/covid'),
 })
 
 app.use(
