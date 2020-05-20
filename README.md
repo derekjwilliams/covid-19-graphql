@@ -417,3 +417,6 @@ Refs:
 https://github.com/timescale/timescaledb/blob/master/docs/BuildSource.md
 https://github.com/timescale/timescaledb/issues/1655
 
+### What About Models?
+
+We are not consuming any data from models yet, however https://covid19-projections.com/ looks to be of very high quality.
