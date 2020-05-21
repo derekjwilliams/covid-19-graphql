@@ -4,9 +4,11 @@ const { postgraphile } = require('postgraphile')
 const ConnectionFilterPlugin = require('postgraphile-plugin-connection-filter')
 const PgManyToManyPlugin = require('@graphile-contrib/pg-many-to-many')
 const { default: FederationPlugin } = require("@graphile/federation")
-
+require('dotenv').config()
 const app = express()
 
+console.log(process.env.POSTGRES_DB)
+console.log(process.env.POSTGRES_USER)
 const pgPool = new pg.Pool({
   connectionString: (process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/covid'),
 })
