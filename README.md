@@ -370,7 +370,7 @@ Johns Hopkins has the population data per county in the `time_series_covid19_dea
 - [x] Data Loader for Global JSONB Data
 - [ ] Automatic Incremental Loading of New Data from GitHub (e.g. WHO, JohnsHopkins, Apple Mobility Services)
 - [ ] Apollo Federation to Provide Unified Service (e.g. WHO, JohnsHopkins, Apple Mobility Services)
-- [ ] TimeScale DB (Timescaledb Postgres 12 Support is in prerelease, use Postgresql 11 in Docker for now)
+- [ ] TimeScale DB (Note: TimescaleDB support not present on AWS, however it may be possible to use AWS Timestream, or the TimescaleDB service)
 - [x] Apple Mobility Schema
 - [x] Apple Mobility Data Loaders
 - [x] ISO country codes, and country centroids in Apple Mobility Data
@@ -379,7 +379,7 @@ Johns Hopkins has the population data per county in the `time_series_covid19_dea
 - [ ] Country centroids in Google Mobility Data
 - [x] Reference D3 Crossfilter Application (see https://github.com/foundobjx/covid-map)
 - [x] Reference React Application
-- [x] Incorporate Data from [COVID-19 Projections Using Machine Learning](https://github.com/youyanggu/covid19_projections)
+- [ ] Incorporate Data from [COVID-19 Projections Using Machine Learning](https://github.com/youyanggu/covid19_projections)
 
 ### Deployments
 
@@ -389,7 +389,7 @@ Johns Hopkins has the population data per county in the `time_series_covid19_dea
 - [x] Deploy Johns Hopkins time series data service (Jason Redcedar)
 - [] Deploy Apollo Mobility data service
 - [] Deploy Google Mobility data service
-- [] Deploy Reference React To Covid Relief Coalition (see https://github.com/foundobjx/covid-map)
+- [ ] Deploy Reference React To Covid Relief Coalition (see https://github.com/foundobjx/covid-map)
 
 
 ### References
