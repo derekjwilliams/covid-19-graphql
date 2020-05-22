@@ -7,7 +7,7 @@ import LineByLine from 'n-readlines'
 
 const valueSplitRegex = /,(?=(?:(?:[^"]*"){2})*[^"]*$)/;
 const dbCredentials = process.env.DB_CREDENTIALS || 'postgres:postgres'
-const host = process.env.DB_HOST || 'localhost:5432'
+const host = process.env.DB_HOST || 'localhost:5434'
 const dbConnection = `postgres://${dbCredentials}@${host}/covid`
 
 const usKeys = ['Combined_Key']
@@ -16,7 +16,7 @@ const knex = k({
   client: 'pg',
   connection: dbConnection,
   searchPath: ['johns_hopkins', 'public'],
-  debug: true
+  debug: false
 })
 
 const replaceName = (line, countryMap) => {
@@ -95,7 +95,7 @@ const getNewDataMap = async (countryMap, place, filename) => {
       if (counts.length > dates.length) {
         console.log(`Length mismatch between Dates and Counts,  Dates: ${dates}, Counts: ${counts}.  Excess count values will not be inserted`)
         counts.splice(dates.length)
-        console.log(`New Counts: ${counts}`)
+        //console.log(`New Counts: ${counts}`)
       }
       const key = createKey(values, keyIndices)
       result.set(createKey(values, keyIndices), counts.map((count, countIndex) => ({time: dates[countIndex], count: count})))
@@ -126,11 +126,11 @@ const processData = async (place, kind) => {
     const newData = await getNewDataMap(nameMap, place, origin)
     for (const location of (await selectLocData(place))) {
       const combinedKey = place === 'US' ? location.combined_key: location.country_region + '-' + location.province_state
-      console.log(combinedKey)
       if (newData.has(combinedKey)) {
         const insertValue = newData.get(combinedKey).map(entry => ({"time": moment.utc(entry.time, "MM/DD/YY").toISOString(), "count": entry.count }))
+        // console.log(`${tablePrefix}_count_jsonb`, location.id, JSON.stringify(insertValue));
+        console.log(`location: ${location.country_region + '-' + location.province_state}`);
         //await updateRow(`${tablePrefix}_count_jsonb`, location.id, JSON.stringify(insertValue))
-        console.log(`Inserted ${insertValue.length} values, starting at ${insertValue[0].time}, ending at ${insertValue[insertValue.length - 1].time}`)
       } else {
         console.log('not found: ' + combinedKey)
       }
