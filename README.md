@@ -379,12 +379,17 @@ Johns Hopkins has the population data per county in the `time_series_covid19_dea
 - [ ] Country centroids in Google Mobility Data
 - [x] Reference D3 Crossfilter Application (see https://github.com/foundobjx/covid-map)
 - [x] Reference React Application
+- [x] Incorporate Data from [COVID-19 Projections Using Machine Learning](https://github.com/youyanggu/covid19_projections)
 
 ### Deployments
 
 - [x] Deploy Database to Covid Relief Coalition (Jason Redcedar)
 - [x] Develop AWS Fargate Deployment for Services (Jason Redcedar)
-- [ ] Deploy Reference React To Covid Relief Coalition
+- [x] Configure Load Balancer  (Jason Redcedar)
+- [x] Deploy Johns Hopkins time series data service (Jason Redcedar)
+- [] Deploy Apollo Mobility data service
+- [] Deploy Google Mobility data service
+- [] Deploy Reference React To Covid Relief Coalition (see https://github.com/foundobjx/covid-map)
 
 
 ### References
