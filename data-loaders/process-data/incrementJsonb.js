@@ -34,10 +34,10 @@ const replaceName = (line, countryMap) => {
   return line
 }
 
-const updateRow = async (table, locationId, values) =>
-  await knex(table).insert({location_id: locationId, counts: values}).then(data => data)
+const insertRows = async (table, insertValues) => 
+  await knex(table).insert(insertValues).then(data => data)
 
-const selectJsonValues = async (tablePrefix) =>
+  const selectJsonValues = async (tablePrefix) =>
   await knex.raw(`SELECT ${tablePrefix}_count_jsonb.counts FROM ${tablePrefix}_count_jsonb, location WHERE location.id = ${tablePrefix}_count_jsonb.location_id and location.country_region = 'US' limit 100`)
      .then(data => data)
 
@@ -124,13 +124,29 @@ const processData = async (place, kind) => {
     const origin = getOrigin(place, kind)
     const tablePrefix = kind === 'confirmed' ? 'case' : kind === 'deaths' ? 'death' : kind
     const newData = await getNewDataMap(nameMap, place, origin)
-    for (const location of (await selectLocData(place))) {
+    let i = 0
+    let values = []
+    const bulkCount = 50;
+    const locs = await selectLocData(place)
+    const locLength = locs.length;
+    for (const location of locs) {
       const combinedKey = place === 'US' ? location.combined_key: location.country_region + '-' + location.province_state
       if (newData.has(combinedKey)) {
+        i++
         const insertValue = newData.get(combinedKey).map(entry => ({"time": moment.utc(entry.time, "MM/DD/YY").toISOString(), "count": entry.count }))
-        // console.log(`${tablePrefix}_count_jsonb`, location.id, JSON.stringify(insertValue));
+        values.push({'location_id': location.id, 'counts': JSON.stringify(insertValue)})
         console.log(`location: ${location.country_region + '-' + location.province_state}`);
-        //await updateRow(`${tablePrefix}_count_jsonb`, location.id, JSON.stringify(insertValue))
+        if (i % bulkCount === 0) {
+          await insertRows(`${tablePrefix}_count_jsonb`, values)
+          values = []
+        }
+        else { 
+          const force = i > ((Math.round((locLength / bulkCount) - 1)* bulkCount))
+          if (force) { // last few, one at a time
+            await insertRows(`${tablePrefix}_count_jsonb`, values)
+            values = []
+          }
+        }
       } else {
         console.log('not found: ' + combinedKey)
       }
@@ -139,12 +155,12 @@ const processData = async (place, kind) => {
     console.log(e)
   }
 }
-
+// TODO clean tables prior to inserts
 ;(async () => {
-    await processData('US', 'deaths')
-    await processData('US', 'confirmed')
-    await processData('global', 'confirmed')
-    await processData('global', 'deaths')
-    await processData('global', 'recovered')
+    // await processData('US', 'deaths')
+    // await processData('US', 'confirmed')
+    // await processData('global', 'confirmed')
+    // await processData('global', 'deaths')
+    // await processData('global', 'recovered')
     knex.destroy()
 })()
