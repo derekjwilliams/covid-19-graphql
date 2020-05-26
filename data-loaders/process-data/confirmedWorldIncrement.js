@@ -7,11 +7,11 @@ import k from 'knex';
 import LineByLine from 'n-readlines'
 
 // after this is run do a merge to our COVID-19 fork
-const origin =
+const incrementOrigin =
   process.env.GLOBAL_CONFIRMED_FILENAME ||
   '../../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv'
 
-const incrementOrigin =
+const origin =
   process.env.GLOBAL_CONFIRMED_INCREMENT_FILENAME ||
   '../../../PARENT-COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv'
 
@@ -75,7 +75,6 @@ const findFirstDate = (values) => {
 // return a map with the Combined_Key value as the key and and array of date:count pairs
 const getNewDataRows = async (filename, countryMap) => {
   const result = new Map()
-
   const oldDataHeader = new LineByLine(origin).next().toString('ascii').split(',')
   const provinceStateIndex = oldDataHeader.findIndex(value => value === 'Province/State')
   const countryRegionIndex = oldDataHeader.findIndex(value => value === 'Country/Region')

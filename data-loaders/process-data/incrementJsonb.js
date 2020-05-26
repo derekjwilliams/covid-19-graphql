@@ -37,7 +37,10 @@ const replaceName = (line, countryMap) => {
 const insertRows = async (table, insertValues) => 
   await knex(table).insert(insertValues).then(data => data)
 
-  const selectJsonValues = async (tablePrefix) =>
+const cleanTable = async(table) => {
+  await knex.raw(`TRUNCATE TABLE ${table} CASCADE`).then(data => data)
+}
+const selectJsonValues = async (tablePrefix) =>
   await knex.raw(`SELECT ${tablePrefix}_count_jsonb.counts FROM ${tablePrefix}_count_jsonb, location WHERE location.id = ${tablePrefix}_count_jsonb.location_id and location.country_region = 'US' limit 100`)
      .then(data => data)
 
@@ -123,6 +126,7 @@ const processData = async (place, kind) => {
     const nameMap = new Map(JSON.parse(await fsPromises.readFile('../additional-data/csseCountryToStandardCountry.json', 'utf8')))
     const origin = getOrigin(place, kind)
     const tablePrefix = kind === 'confirmed' ? 'case' : kind === 'deaths' ? 'death' : kind
+    cleanTable(`${tablePrefix}_count_jsonb`)
     const newData = await getNewDataMap(nameMap, place, origin)
     let i = 0
     let values = []
@@ -157,10 +161,10 @@ const processData = async (place, kind) => {
 }
 // TODO clean tables prior to inserts
 ;(async () => {
-    // await processData('US', 'deaths')
-    // await processData('US', 'confirmed')
-    // await processData('global', 'confirmed')
-    // await processData('global', 'deaths')
-    // await processData('global', 'recovered')
+    await processData('US', 'deaths')
+    await processData('US', 'confirmed')
+    await processData('global', 'confirmed')
+    await processData('global', 'deaths')
+    await processData('global', 'recovered')
     knex.destroy()
 })()
