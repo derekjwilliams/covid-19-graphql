@@ -10,6 +10,8 @@ CREATE TABLE apple_mobility.mobility_location (
     region varchar(64),
     transportation_type varchar(64),
     alternative_name varchar(64),
+    subregion varchar(64),
+    country varchar(64),
     iso2 varchar(2),
     iso3 varchar(3),
     code3 int4,
