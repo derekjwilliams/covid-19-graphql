@@ -3,7 +3,7 @@ import moment from 'moment'
 import uuid from 'uuid'
 import dotenv from 'dotenv'
 dotenv.config()
-import k from 'knex'; 
+import k from 'knex'
 import LineByLine from 'n-readlines'
 
 // after this is run do a merge to our COVID-19 fork
@@ -68,8 +68,7 @@ const getNewDataRows = async (filename) => {
   return result
 }
 
-const insertRows = async (table, values) => 
-    await knex(table).insert(values).then(data => data)
+const insertRows = async (table, values) => await knex(table).insert(values).then(data => data)
 
 const processData = async () => {
   const newData = await getNewDataRows(incrementOrigin)
@@ -79,18 +78,14 @@ const processData = async () => {
     const match = newData.has(combinedKey)
     if (match) {
       const newDataRow = newData.get(combinedKey)
-      let values = []
-      for (const newData of newDataRow) {
-        const timestamp = moment.utc(newData.date, "MM/DD/YY").toISOString();
-        values.push({id:`${uuid.v4()}`,location_id: `${location.id}`,time: timestamp, count: newData.count})
-      }
+      const values = newDataRow.map(newData => ({id:`${uuid.v4()}`,location_id: `${location.id}`,time: moment.utc(newData.date, "MM/DD/YY").toISOString(), count: newData.count}))
       console.log(JSON.stringify(values, null, 2))
       //await insertRows ('death_count', values)
     } else {
       console.log('not found: ' + combinedKey)
     }
   }
-  knex.destroy();
+  knex.destroy()
 }
 processData()
 

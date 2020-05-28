@@ -72,7 +72,7 @@ const newRowValues = async (locationIdMap, after) => {
         const location_id = locationIdMap.get(combinedKey)
         const rawSqlInsert = `INSERT INTO google_mobility.mobility_change(location_id, time, ${validDbColumns}) VALUES ('${location_id}', '${time}', ${dataValues});`;
         console.log(rawSqlInsert)
-        await insertRow(rawSqlInsert)
+        //await insertRow(rawSqlInsert)
       }
     }
   }
