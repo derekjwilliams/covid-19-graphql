@@ -109,7 +109,7 @@ const processData = async () => {
         const timestamp = moment.utc(newData.date, "MM/DD/YY").toISOString();
         console.log(`time: ${timestamp}, count: ${newData.count}`)
         // comment out next line to prevent accidental insertion while code is in development
-        //await insertRow ('case_count', {id:`${uuid.v4()}`,location_id: `${location.id}`,time: timestamp, count: newData.count})
+        // await insertRow ('case_count', {id:`${uuid.v4()}`,location_id: `${location.id}`,time: timestamp, count: newData.count})
       }
     } else {
       console.log('not found: ' + combinedKey)

@@ -98,7 +98,6 @@ const getNewDataMap = async (countryMap, place, filename) => {
       if (counts.length > dates.length) {
         console.log(`Length mismatch between Dates and Counts,  Dates: ${dates}, Counts: ${counts}.  Excess count values will not be inserted`)
         counts.splice(dates.length)
-        //console.log(`New Counts: ${counts}`)
       }
       const key = createKey(values, keyIndices)
       result.set(createKey(values, keyIndices), counts.map((count, countIndex) => ({time: dates[countIndex], count: count})))
@@ -126,28 +125,24 @@ const processData = async (place, kind) => {
     const nameMap = new Map(JSON.parse(await fsPromises.readFile('../additional-data/csseCountryToStandardCountry.json', 'utf8')))
     const origin = getOrigin(place, kind)
     const tablePrefix = kind === 'confirmed' ? 'case' : kind === 'deaths' ? 'death' : kind
-    cleanTable(`${tablePrefix}_count_jsonb`)
+    const tableName = `${tablePrefix}_count_jsonb`
+    cleanTable(tableName)
     const newData = await getNewDataMap(nameMap, place, origin)
     let i = 0
     let values = []
-    const bulkCount = 50;
     const locs = await selectLocData(place)
     const locLength = locs.length;
+    const bulkCount = 100;
     for (const location of locs) {
       const combinedKey = place === 'US' ? location.combined_key: location.country_region + '-' + location.province_state
       if (newData.has(combinedKey)) {
         i++
         const insertValue = newData.get(combinedKey).map(entry => ({"time": moment.utc(entry.time, "MM/DD/YY").toISOString(), "count": entry.count }))
         values.push({'location_id': location.id, 'counts': JSON.stringify(insertValue)})
-        console.log(`location: ${location.country_region + '-' + location.province_state}`);
-        if (i % bulkCount === 0) {
-          await insertRows(`${tablePrefix}_count_jsonb`, values)
-          values = []
-        }
-        else { 
-          const force = i > ((Math.round((locLength / bulkCount) - 1)* bulkCount))
-          if (force) { // last few, one at a time
-            await insertRows(`${tablePrefix}_count_jsonb`, values)
+        if ((i % bulkCount === 0) || i > (Math.round((locLength / bulkCount) - 1)* bulkCount)) {
+          if (i % bulkCount === 0 || i === locLength) {
+            console.log(`${insertValue.length} values inserted for ${values.length} locations (${i} out of ${locLength}), last location: ${combinedKey} into table ${tableName} on host ${host}`);
+           await insertRows(tableName, values)
             values = []
           }
         }
@@ -159,7 +154,6 @@ const processData = async (place, kind) => {
     console.log(e)
   }
 }
-// TODO clean tables prior to inserts
 ;(async () => {
     await processData('US', 'deaths')
     await processData('US', 'confirmed')
