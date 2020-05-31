@@ -2,7 +2,8 @@ const pg = require('pg')
 const express = require('express')
 const { postgraphile } = require('postgraphile')
 const ConnectionFilterPlugin = require('postgraphile-plugin-connection-filter')
-const PgManyToManyPlugin = require('@graphile-contrib/pg-many-to-many')
+const PostgisPlugin =  require("@graphile/postgis")
+const PgConnectionFilterPostgisPlugin = require("postgraphile-plugin-connection-filter-postgis");
 const { default: FederationPlugin } = require("@graphile/federation")
 require('dotenv').config()
 const app = express()
@@ -18,7 +19,7 @@ app.use(
     pgPool,
     process.env.SCHEMA_NAMES ? process.env.SCHEMA_NAMES.split(',') : ['johns_hopkins'],
     {
-      appendPlugins: [FederationPlugin,ConnectionFilterPlugin, PgManyToManyPlugin],
+      appendPlugins: [ConnectionFilterPlugin, PostgisPlugin.default, PgConnectionFilterPostgisPlugin, FederationPlugin],
       graphileBuildOptions: {
         connectionFilterRelations: true,
       },
