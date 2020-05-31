@@ -4,7 +4,7 @@ import uuid from "uuid"
 import dotenv from "dotenv"
 dotenv.config()
 
-const origin = '../applemobilitytrends.csv'
+const origin = '../applemobilitytrends-2020-05-26.csv'
 const locationsInsertDestination = "../init/01-locations.sql";
 const valuesInsertDestination = "../init/02-values.sql";
 const regex = /,(?=(?:(?:[^"]*"){2})*[^"]*$)/;
@@ -64,12 +64,22 @@ const getNum3CodeForCountry = (countryName, lookup) => {
   }
   return -1
 }
+const findFirstDate = (values) => {
+  return values.findIndex(value => {
+    const dateCandidate = moment(value, 'YYYY-MM-DD', true)
+    return dateCandidate.isValid()
+  })
+}
 const processData = async () => {
   const lookup = JSON.parse(await fsPromises.readFile('./lookup.json', 'utf8'))
   const locationData = await fsPromises.readFile(origin,"utf8")
   const lines = locationData.split('\n')
   const dates = lines[0].split(regex)
-  dates.splice(0,4)
+  console.log(findFirstDate(dates))
+
+  dates.splice(0,6)
+  // console.log(JSON.stringify(dates, null, 2))
+  return
   const locationInserts = lines.map((line, index) => {
     const data = line.split(regex)
     if (data.length > 3) {

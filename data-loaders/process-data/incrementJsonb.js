@@ -142,7 +142,8 @@ const processData = async (place, kind) => {
         if ((i % bulkCount === 0) || i > (Math.round((locLength / bulkCount) - 1)* bulkCount)) {
           if (i % bulkCount === 0 || i === locLength) {
             console.log(`${insertValue.length} values inserted for ${values.length} locations (${i} out of ${locLength}), last location: ${combinedKey} into table ${tableName} on host ${host}`);
-            //await insertRows(tableName, values)
+            //console.log(JSON.stringify(values, null, 2))
+            await insertRows(tableName, values)
             values = []
           }
         }
