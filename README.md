@@ -164,6 +164,7 @@ https://www.npmjs.com/package/postgraphile-plugin-connection-filter-postgis
       centroid: {
         within: {
           type: "Polygon"
+          crs:{type:"name",properties:{name:"EPSG:4326"}}
           coordinates: [
             [
               [-88.0, 32.0]
@@ -388,8 +389,8 @@ Johns Hopkins has the population data per county in the `time_series_covid19_dea
 - [x] Develop AWS Fargate Deployment for Services (Jason Redcedar)
 - [x] Configure Load Balancer  (Jason Redcedar)
 - [x] Deploy Johns Hopkins time series data service (Jason Redcedar)
-- [] Deploy Apollo Mobility data service
-- [] Deploy Google Mobility data service
+- [x] Deploy Apollo Mobility data service
+- [x] Deploy Google Mobility data service
 - [ ] Deploy Reference React To Covid Relief Coalition (see https://github.com/foundobjx/covid-map)
 
 
