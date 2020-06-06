@@ -86,6 +86,7 @@ const getNewDataMap = async (countryMap, place, filename) => {
   const dataHeader = new LineByLine(filename).next().toString('ascii').split(',')
   const keyIndices = createKeyIndices(dataHeader, place === 'US' ? usKeys : worldKeys)
   const firstDateIndex = findFirstDateIndex(dataHeader)
+  console.log(filename)
   const newLines = (await fsPromises.readFile(filename,'utf8')
       .then(_ =>  _.split('\n')))
       .map(line => replaceName(line, countryMap))
@@ -115,8 +116,9 @@ const getOrigin = (place, kind) =>
 {
   const envNameKind = kind.toUpperCase()
   const envNamePlace = place.toUpperCase()
-  return process.env[`${envNamePlace}_${envNameKind}_INCREMENT_FILENAME}`] ||
-  `../../../PARENT-COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_${kind}_${place}.csv`
+  console.log(`${envNamePlace}_${envNameKind}_INCREMENT_FILENAME`)
+  return process.env[`${envNamePlace}_${envNameKind}_INCREMENT_FILENAME`] ||
+  `../../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_${kind}_${place}.csv`
 
 }
 
@@ -124,15 +126,17 @@ const processData = async (place, kind) => {
   try {
     const nameMap = new Map(JSON.parse(await fsPromises.readFile('../additional-data/csseCountryToStandardCountry.json', 'utf8')))
     const origin = getOrigin(place, kind)
+    console.log(origin)
     const tablePrefix = kind === 'confirmed' ? 'case' : kind === 'deaths' ? 'death' : kind
     const tableName = `${tablePrefix}_count_jsonb`
-    cleanTable(tableName)
     const newData = await getNewDataMap(nameMap, place, origin)
     let i = 0
     let values = []
     const locs = await selectLocData(place)
     const locLength = locs.length;
     const bulkCount = 100;
+
+    cleanTable(tableName)
     for (const location of locs) {
       const combinedKey = place === 'US' ? location.combined_key: location.country_region + '-' + location.province_state
       if (newData.has(combinedKey)) {
@@ -142,8 +146,7 @@ const processData = async (place, kind) => {
         if ((i % bulkCount === 0) || i > (Math.round((locLength / bulkCount) - 1)* bulkCount)) {
           if (i % bulkCount === 0 || i === locLength) {
             console.log(`${insertValue.length} values inserted for ${values.length} locations (${i} out of ${locLength}), last location: ${combinedKey} into table ${tableName} on host ${host}`);
-            //console.log(JSON.stringify(values, null, 2))
-            await insertRows(tableName, values)
+            // await insertRows(tableName, values)
             values = []
           }
         }
@@ -157,9 +160,9 @@ const processData = async (place, kind) => {
 }
 ;(async () => {
     await processData('US', 'deaths')
+    await processData('global', 'deaths')
     await processData('US', 'confirmed')
     await processData('global', 'confirmed')
-    await processData('global', 'deaths')
     await processData('global', 'recovered')
     knex.destroy()
 })()

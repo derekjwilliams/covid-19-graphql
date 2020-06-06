@@ -2,18 +2,22 @@ import { promises as fsPromises } from 'fs'
 import moment from 'moment'
 import uuid from 'uuid'
 import dotenv from 'dotenv'
-dotenv.config()
+import dotenvExpand from 'dotenv-expand'
+const theEnv = dotenv.config()
+dotenvExpand(theEnv)
 import k from 'knex'; 
 import LineByLine from 'n-readlines'
 
 // after this is run do a merge to our COVID-19 fork
-const incrementOrigin =
-  process.env.GLOBAL_CONFIRMED_FILENAME ||
-  '../../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv'
-
-const origin =
+const worldConfirmedIncrementOrigin =
   process.env.GLOBAL_CONFIRMED_INCREMENT_FILENAME ||
+  '../../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv'
+const worldConfirmedOrigin =
+  process.env.GLOBAL_CONFIRMED_FILENAME ||
   '../../../PARENT-COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv'
+
+console.log(`incrementOrigin: ${incrementOrigin}`)
+console.log(`origin: ${origin}`)
 
 const regex = /,(?=(?:(?:[^"]*"){2})*[^"]*$)/;
 
@@ -42,6 +46,15 @@ const replaceName = (line, countryMap) => {
   }
   return line
 }
+
+//TODO get last date from existing database table
+const findFirstDate = (values) => {
+  return values.findIndex(value => {
+    const dateCandidate = moment(value, 'M/DD/YY', true)
+    return dateCandidate.isValid()
+  })
+}
+
 const createLocationCodeMap = (locationCodes) => {
   const result = new Map()
   const codeLines = locationCodes.split('\n')
@@ -65,15 +78,9 @@ const selectLocData = async (table) => {
           .whereNot({country_region: 'US'})
           .then(data => data)
 }
-const findFirstDate = (values) => {
-  return values.findIndex(value => {
-    const dateCandidate = moment(value, 'M/DD/YY', true)
-    return dateCandidate.isValid()
-  })
-}
 
-// return a map with the Combined_Key value as the key and and array of date:count pairs
-const getNewDataRows = async (filename, countryMap) => {
+const getNewDataWorldRows = async (filename, origin) => {
+  const countryMap = new Map(JSON.parse(await fsPromises.readFile('../additional-data/csseCountryToStandardCountry.json', 'utf8')))
   const result = new Map()
   const oldDataHeader = new LineByLine(origin).next().toString('ascii').split(',')
   const provinceStateIndex = oldDataHeader.findIndex(value => value === 'Province/State')
@@ -84,6 +91,7 @@ const getNewDataRows = async (filename, countryMap) => {
   .map(line => replaceName(line, countryMap))
 
   const dates = newLines[0].split(regex).splice(oldDataLength).map(_ => _)
+  console.log(dates)
   for (const [i, newLine] of newLines.entries()) {
     if (i > 0 && !!newLine.length) {
       const values = newLine.split(regex)
@@ -95,30 +103,24 @@ const getNewDataRows = async (filename, countryMap) => {
   }
   return result
 }
-const processData = async () => {
-  const nameMap = new Map(JSON.parse(await fsPromises.readFile('../additional-data/csseCountryToStandardCountry.json', 'utf8')))
-  const newData = await getNewDataRows(incrementOrigin, nameMap)
+const insertRows = async (table, values) => await knex(table).insert(values).then(data => data)
+
+const processData = async (table, incrementOrigin, origin) => {
+  const newData = await getNewDataWorldRows(incrementOrigin, origin)
 
   const existingLocationsInDatabase = await selectLocData('location')
   for (const location of existingLocationsInDatabase) {
     const combinedKey = location.country_region + '-' + location.province_state
     const match = newData.has(combinedKey)
     if (match) {
-      const newDataRow = newData.get(combinedKey)
-      for (const newData of newDataRow) {
-        const timestamp = moment.utc(newData.date, "MM/DD/YY").toISOString();
-        console.log(`time: ${timestamp}, count: ${newData.count}`)
-        // comment out next line to prevent accidental insertion while code is in development
-        // await insertRow ('case_count', {id:`${uuid.v4()}`,location_id: `${location.id}`,time: timestamp, count: newData.count})
-      }
+      const values = newData.get(combinedKey).map(newData => ({id:`${uuid.v4()}`,location_id: `${location.id}`,time: moment.utc(newData.date, "MM/DD/YY").toISOString(), count: newData.count}))
+      console.log(JSON.stringify(values, null, 2))
+      // comment out next line to prevent accidental insertion while code is in development
+      // await insertRows(table, values)
     } else {
       console.log('not found: ' + combinedKey)
     }
   }
   knex.destroy();
 }
-processData()
-
-
-
-
+processData('case_count', worldConfirmedIncrementOrigin,  worldConfirmedOrigin)

@@ -2,17 +2,19 @@ import { promises as fsPromises } from 'fs'
 import moment from 'moment'
 import uuid from 'uuid'
 import dotenv from 'dotenv'
-dotenv.config()
+import dotenvExpand from 'dotenv-expand'
+const theEnv = dotenv.config()
+dotenvExpand(theEnv)
 import k from 'knex'
 import LineByLine from 'n-readlines'
 
 // after this is run do a merge to our COVID-19 fork
-const incrementOrigin =
-  process.env.US_DEATHS_FILENAME ||
+const USDeathsIncrementOrigin =
+  process.env.US_DEATHS_INCREMENT_FILENAME ||
   '../../../COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv'
 
-const origin =
-  process.env.US_DEATHS_INCREMENT_FILENAME ||
+const USDeathsOrigin =
+  process.env.US_DEATHS_FILENAME ||
   '../../../PARENT-COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv'
 
 const regex = /,(?=(?:(?:[^"]*"){2})*[^"]*$)/;
@@ -38,16 +40,9 @@ const selectLocData = async (table) => {
           .where({country_region: 'US'})
           .then(data => data)
 }
-//TODO get last date from database deaths table
-const findFirstDate = (values) => {
-  return values.findIndex(value => {
-    const dateCandidate = moment(value, 'M/DD/YY', true)
-    return dateCandidate.isValid()
-  })
-}
 
 // return a map with the Combined_Key value as the key and and array of date:count pairs
-const getNewDataRows = async (filename) => {
+const getNewDataRows = async (filename, origin) => {
   const result = new Map()
 
   const oldDataHeader = new LineByLine(origin).next().toString('ascii').split(',')
@@ -70,8 +65,8 @@ const getNewDataRows = async (filename) => {
 
 const insertRows = async (table, values) => await knex(table).insert(values).then(data => data)
 
-const processData = async () => {
-  const newData = await getNewDataRows(incrementOrigin)
+const processData = async (table, incrementOrigin, origin) => {
+  const newData = await getNewDataRows(incrementOrigin, origin)
   const existingLocationsInDatabase = await selectLocData('location')
   for (const location of existingLocationsInDatabase) {
     const combinedKey = location.combined_key
@@ -80,14 +75,14 @@ const processData = async () => {
       const newDataRow = newData.get(combinedKey)
       const values = newDataRow.map(newData => ({id:`${uuid.v4()}`,location_id: `${location.id}`,time: moment.utc(newData.date, "MM/DD/YY").toISOString(), count: newData.count}))
       console.log(JSON.stringify(values, null, 2))
-      //await insertRows ('death_count', values)
+    //   await insertRows (table, values)
     } else {
       console.log('not found: ' + combinedKey)
     }
   }
   knex.destroy()
 }
-processData()
+processData('death_count', USDeathsIncrementOrigin, USDeathsOrigin)
 
 
 
