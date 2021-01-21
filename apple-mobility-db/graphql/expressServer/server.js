@@ -20,7 +20,10 @@ const limiter = rateLimit({
 });
  
 //  apply to all requests
-app.use(limiter);
+app.use( rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100 // limit each IP to 100 requests per windowMs
+}));
 
 console.log(process.env.POSTGRES_DB)
 console.log(process.env.POSTGRES_USER)
