@@ -5,8 +5,22 @@ const ConnectionFilterPlugin = require('postgraphile-plugin-connection-filter')
 const PostgisPlugin =  require("@graphile/postgis")
 const PgConnectionFilterPostgisPlugin = require("postgraphile-plugin-connection-filter-postgis");
 const { default: FederationPlugin } = require("@graphile/federation")
+const rateLimit = require("express-rate-limit")
 require('dotenv').config()
 const app = express()
+
+ 
+// Enable if you're behind a reverse proxy (Heroku, Bluemix, AWS ELB, Nginx, etc)
+// see https://expressjs.com/en/guide/behind-proxies.html
+// app.set('trust proxy', 1);
+ 
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100 // limit each IP to 100 requests per windowMs
+});
+ 
+//  apply to all requests
+app.use(limiter);
 
 console.log(process.env.POSTGRES_DB)
 console.log(process.env.POSTGRES_USER)
